@@ -880,7 +880,7 @@ button:disabled {
     </div>
 
     <div class="contact-phone">
-      ☎ 0370-4999958
+      ☎ 0370-4999957
     </div>
 
   </div>
@@ -1836,7 +1836,7 @@ button:disabled {
   Training Incharge:
   Ali Waqas Tiwana
   |
-  0370-4999958
+  0370-4999957
 
   <br>
 
@@ -2025,11 +2025,118 @@ document.addEventListener(
 
 
 /* =====================================================
-   FORM SUBMIT - PUBLIC FRONT-END
+   FORM SUBMIT - MOBILE SAFE NATIVE POST
    ===================================================== */
 
 var BACKEND_URL =
   "https://script.google.com/macros/s/AKfycbxoO_42f3bmoefcefCNlHvGqdVFjUN41nk3plObIHaubWJqbDZgA2NZx2vlidIuQm8r/exec";
+
+
+/*
+ * IMPORTANT:
+ * We deliberately do NOT use fetch() or no-cors here.
+ * A normal HTML form POST is used so mobile browsers can
+ * submit cross-origin data to Google Apps Script without
+ * requiring CORS permission.
+ */
+
+var bridgeFrame = document.createElement("iframe");
+bridgeFrame.name = "lescoSubmitFrame";
+bridgeFrame.id = "lescoSubmitFrame";
+bridgeFrame.style.display = "none";
+document.body.appendChild(bridgeFrame);
+
+
+var bridgeForm = document.createElement("form");
+bridgeForm.method = "POST";
+bridgeForm.action = BACKEND_URL;
+bridgeForm.target = "lescoSubmitFrame";
+bridgeForm.style.display = "none";
+document.body.appendChild(bridgeForm);
+
+
+function addBridgeInput(name, value) {
+
+  var input = document.createElement("input");
+
+  input.type = "hidden";
+  input.name = name;
+  input.value = value == null ? "" : String(value);
+
+  bridgeForm.appendChild(input);
+}
+
+
+function clearBridgeInputs() {
+
+  while (bridgeForm.firstChild) {
+    bridgeForm.removeChild(bridgeForm.firstChild);
+  }
+}
+
+
+window.addEventListener("message", function(event) {
+
+  var data = event.data;
+
+  if (!data || data.type !== "LESCO_TRAINING_SAVE") {
+    return;
+  }
+
+  var button =
+    document.getElementById("submitButton");
+
+  var message =
+    document.getElementById("message");
+
+  button.disabled = false;
+  button.innerText = "تربیتی فارم جمع کریں";
+
+
+  if (data.success) {
+
+    message.className = "message success";
+
+    message.innerText =
+      "✓ آپ کی معلومات کامیابی سے جمع ہو گئی ہیں۔ شکریہ۔";
+
+    message.scrollIntoView({
+      behavior: "smooth",
+      block: "center"
+    });
+
+    document
+      .getElementById("trainingForm")
+      .reset();
+
+    divisionCode.value = "";
+
+    divisionDisplay
+      .classList
+      .add("empty");
+
+    divisionDisplay.textContent =
+      "Sub-Division منتخب کریں";
+
+  } else {
+
+    message.className = "message error";
+
+    message.innerText =
+      "معلومات محفوظ نہیں ہو سکیں۔ براہِ کرم دوبارہ کوشش کریں۔";
+
+    message.scrollIntoView({
+      behavior: "smooth",
+      block: "center"
+    });
+  }
+
+});
+
+
+/* =====================================================
+   FORM SUBMIT
+   ===================================================== */
 
 document
   .getElementById("trainingForm")
@@ -2120,104 +2227,59 @@ document
           document.getElementById("comments").value
       };
 
-      /*
-       * IMPORTANT:
-       * Do NOT use fetch()/no-cors here.
-       * Submit as a normal HTML POST into a hidden iframe.
-       * This avoids CORS/redirect problems with Apps Script.
-       */
+      clearBridgeInputs();
 
-      var iframe =
-        document.getElementById("submitFrame");
-
-      if (!iframe) {
-
-        iframe =
-          document.createElement("iframe");
-
-        iframe.id = "submitFrame";
-        iframe.name = "submitFrame";
-
-        iframe.style.display = "none";
-
-        document.body.appendChild(iframe);
-      }
-
-      var postForm =
-        document.createElement("form");
-
-      postForm.method = "POST";
-      postForm.action = BACKEND_URL;
-      postForm.target = "submitFrame";
-      postForm.style.display = "none";
-
-      var payloadInput =
-        document.createElement("input");
-
-      payloadInput.type = "hidden";
-      payloadInput.name = "payload";
-      payloadInput.value =
-        JSON.stringify(data);
-
-      postForm.appendChild(payloadInput);
-
-      document.body.appendChild(postForm);
-
-      var finished = false;
-
-      function showSaved() {
-
-        if (finished) {
-          return;
-        }
-
-        finished = true;
-
-        button.disabled = false;
-        button.innerText = "تربیتی فارم جمع کریں";
-
-        message.className =
-          "message success";
-
-        message.innerText =
-          "✓ آپ کی معلومات کامیابی سے جمع ہو گئی ہیں۔ شکریہ۔";
-
-        message.scrollIntoView({
-          behavior: "smooth",
-          block: "center"
-        });
-
-        document
-          .getElementById("trainingForm")
-          .reset();
-
-        divisionCode.value = "";
-
-        divisionDisplay
-          .classList
-          .add("empty");
-
-        divisionDisplay.textContent =
-          "Sub-Division منتخب کریں";
-
-        postForm.remove();
-      }
-
-      iframe.onload = function() {
-        showSaved();
-      };
-
-      postForm.submit();
+      Object.keys(data).forEach(function(key) {
+        addBridgeInput(key, data[key]);
+      });
 
       /*
-       * Safety fallback for mobile browsers.
+       * Native browser POST -> hidden iframe -> Apps Script.
+       * No fetch(), no CORS, no-cors or JSONP is used.
        */
-      setTimeout(function() {
-        showSaved();
-      }, 3000);
+      bridgeForm.submit();
+
+      /*
+       * Safety timeout. If Google does not return the callback,
+       * do not show a false success message.
+       */
+      window.clearTimeout(window.lescoSaveTimeout);
+
+      window.lescoSaveTimeout =
+        window.setTimeout(function() {
+
+          if (button.disabled) {
+
+            button.disabled = false;
+            button.innerText = "تربیتی فارم جمع کریں";
+
+            message.className = "message error";
+
+            message.innerText =
+              "سرور سے تصدیق موصول نہیں ہوئی۔ براہِ کرم دوبارہ کوشش کریں۔";
+
+          }
+
+        }, 20000);
 
     }
-  );</script>
+  );
+
+
+/*
+ * When the Apps Script callback arrives, stop the timeout.
+ */
+window.addEventListener("message", function(event) {
+
+  if (
+    event.data &&
+    event.data.type === "LESCO_TRAINING_SAVE"
+  ) {
+    window.clearTimeout(window.lescoSaveTimeout);
+  }
+
+});
+</script>
 
 
 </body>
