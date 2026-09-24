@@ -2025,260 +2025,146 @@ document.addEventListener(
 
 
 /* =====================================================
-   FORM SUBMIT - MOBILE SAFE NATIVE POST
+   FORM SUBMIT - GOOGLE FORMS MOBILE BACKEND
    ===================================================== */
 
-var BACKEND_URL =
-  "https://script.google.com/macros/s/AKfycbxoO_42f3bmoefcefCNlHvGqdVFjUN41nk3plObIHaubWJqbDZgA2NZx2vlidIuQm8r/exec";
+var GOOGLE_FORM_POST_URL =
+  "https://docs.google.com/forms/d/e/1FAIpQLSfcH3ynlbxQfrEV5_oqrCVRZU1dE5dNGLp1e5npf4v_yJOIiQ/formResponse";
 
+var GOOGLE_FORM_FIELDS = {
+  subDivision: "entry.139899667",
+  divisionCode: "entry.706623637",
+  divisionComments: "entry.397790830",
+  name: "entry.2115961092",
+  designation: "entry.1559883843",
+  mobile: "entry.491407724",
+  email: "entry.1348060166",
+  participation: "entry.2026160373",
+  trainingImportance: "entry.76835925",
+  topics: "entry.1525640564",
+  currentProblems: "entry.1267166122",
+  additionalTraining: "entry.1371235256",
+  comments: "entry.1649703539"
+};
 
-/*
- * IMPORTANT:
- * We deliberately do NOT use fetch() or no-cors here.
- * A normal HTML form POST is used so mobile browsers can
- * submit cross-origin data to Google Apps Script without
- * requiring CORS permission.
- */
+var googleSubmitFrame = document.createElement("iframe");
+googleSubmitFrame.name = "googleFormSubmitFrame";
+googleSubmitFrame.id = "googleFormSubmitFrame";
+googleSubmitFrame.style.display = "none";
+googleSubmitFrame.setAttribute("aria-hidden", "true");
+document.body.appendChild(googleSubmitFrame);
 
-var bridgeFrame = document.createElement("iframe");
-bridgeFrame.name = "lescoSubmitFrame";
-bridgeFrame.id = "lescoSubmitFrame";
-bridgeFrame.style.display = "none";
-document.body.appendChild(bridgeFrame);
-
-
-var bridgeForm = document.createElement("form");
-bridgeForm.method = "POST";
-bridgeForm.action = BACKEND_URL;
-bridgeForm.target = "lescoSubmitFrame";
-bridgeForm.style.display = "none";
-document.body.appendChild(bridgeForm);
-
-
-function addBridgeInput(name, value) {
-
+function addGoogleField(form, name, value) {
   var input = document.createElement("input");
-
   input.type = "hidden";
   input.name = name;
   input.value = value == null ? "" : String(value);
-
-  bridgeForm.appendChild(input);
+  form.appendChild(input);
 }
 
-
-function clearBridgeInputs() {
-
-  while (bridgeForm.firstChild) {
-    bridgeForm.removeChild(bridgeForm.firstChild);
-  }
+function addGoogleMultiField(form, name, values) {
+  values.forEach(function(value) {
+    addGoogleField(form, name, value);
+  });
 }
 
-
-window.addEventListener("message", function(event) {
-
-  var data = event.data;
-
-  if (!data || data.type !== "LESCO_TRAINING_SAVE") {
-    return;
-  }
-
-  var button =
-    document.getElementById("submitButton");
-
-  var message =
-    document.getElementById("message");
-
-  button.disabled = false;
-  button.innerText = "تربیتی فارم جمع کریں";
-
-
-  if (data.success) {
-
-    message.className = "message success";
-
-    message.innerText =
-      "✓ آپ کی معلومات کامیابی سے جمع ہو گئی ہیں۔ شکریہ۔";
-
-    message.scrollIntoView({
-      behavior: "smooth",
-      block: "center"
-    });
-
-    document
-      .getElementById("trainingForm")
-      .reset();
-
-    divisionCode.value = "";
-
-    divisionDisplay
-      .classList
-      .add("empty");
-
-    divisionDisplay.textContent =
-      "Sub-Division منتخب کریں";
-
-  } else {
-
-    message.className = "message error";
-
-    message.innerText =
-      "معلومات محفوظ نہیں ہو سکیں۔ براہِ کرم دوبارہ کوشش کریں۔";
-
-    message.scrollIntoView({
-      behavior: "smooth",
-      block: "center"
-    });
-  }
-
-});
-
-
-/* =====================================================
-   FORM SUBMIT
-   ===================================================== */
 
 document
   .getElementById("trainingForm")
-  .addEventListener(
-    "submit",
-    function(event) {
+  .addEventListener("submit", function(event) {
 
-      event.preventDefault();
+    event.preventDefault();
 
-      var button =
-        document.getElementById("submitButton");
+    var originalForm = this;
 
-      var message =
-        document.getElementById("message");
-
-      button.disabled = true;
-      button.innerText = "محفوظ کیا جا رہا ہے...";
-
-      message.className = "message";
-      message.innerText = "";
-
-      var selectedTopics =
-        document.querySelectorAll(
-          "input[name='topic']:checked"
-        );
-
-      var topics = [];
-
-      selectedTopics.forEach(
-        function(item) {
-          topics.push(item.value);
-        }
-      );
-
-      var participation =
-        document.querySelector(
-          "input[name='participation']:checked"
-        );
-
-      var importance =
-        document.querySelector(
-          "input[name='trainingImportance']:checked"
-        );
-
-      var data = {
-
-        subDivision:
-          document.getElementById("subDivision").value,
-
-        divisionCode:
-          document.getElementById("divisionCode").value,
-
-        divisionComments:
-          document.getElementById("divisionComments").value,
-
-        name:
-          document.getElementById("name").value,
-
-        designation:
-          document.getElementById("designation").value,
-
-        mobile:
-          document.getElementById("mobile").value,
-
-        email:
-          document.getElementById("email").value,
-
-        participation:
-          participation
-            ? participation.value
-            : "",
-
-        trainingImportance:
-          importance
-            ? importance.value
-            : "",
-
-        topics:
-          topics.join(", "),
-
-        currentProblems:
-          document.getElementById("currentProblems").value,
-
-        additionalTraining:
-          document.getElementById("additionalTraining").value,
-
-        comments:
-          document.getElementById("comments").value
-      };
-
-      clearBridgeInputs();
-
-      Object.keys(data).forEach(function(key) {
-        addBridgeInput(key, data[key]);
-      });
-
-      /*
-       * Native browser POST -> hidden iframe -> Apps Script.
-       * No fetch(), no CORS, no-cors or JSONP is used.
-       */
-      bridgeForm.submit();
-
-      /*
-       * Safety timeout. If Google does not return the callback,
-       * do not show a false success message.
-       */
-      window.clearTimeout(window.lescoSaveTimeout);
-
-      window.lescoSaveTimeout =
-        window.setTimeout(function() {
-
-          if (button.disabled) {
-
-            button.disabled = false;
-            button.innerText = "تربیتی فارم جمع کریں";
-
-            message.className = "message error";
-
-            message.innerText =
-              "سرور سے تصدیق موصول نہیں ہوئی۔ براہِ کرم دوبارہ کوشش کریں۔";
-
-          }
-
-        }, 20000);
-
+    if (!originalForm.checkValidity()) {
+      originalForm.reportValidity();
+      return;
     }
-  );
 
+    var button = document.getElementById("submitButton");
+    var message = document.getElementById("message");
 
-/*
- * When the Apps Script callback arrives, stop the timeout.
- */
-window.addEventListener("message", function(event) {
+    var selectedTopics = document.querySelectorAll("input[name='topic']:checked");
+    var topics = [];
+    selectedTopics.forEach(function(item) { topics.push(item.value); });
 
-  if (
-    event.data &&
-    event.data.type === "LESCO_TRAINING_SAVE"
-  ) {
-    window.clearTimeout(window.lescoSaveTimeout);
-  }
+    var participation = document.querySelector("input[name='participation']:checked");
+    var importance = document.querySelector("input[name='trainingImportance']:checked");
 
-});
+    button.disabled = true;
+    button.innerText = "محفوظ کیا جا رہا ہے...";
+    message.className = "message";
+    message.innerText = "";
+
+    var transportForm = document.createElement("form");
+    transportForm.method = "POST";
+    transportForm.action = GOOGLE_FORM_POST_URL;
+    transportForm.target = "googleFormSubmitFrame";
+    transportForm.acceptCharset = "UTF-8";
+    transportForm.style.display = "none";
+
+    addGoogleField(transportForm, GOOGLE_FORM_FIELDS.subDivision, document.getElementById("subDivision").value);
+    addGoogleField(transportForm, GOOGLE_FORM_FIELDS.divisionCode, document.getElementById("divisionCode").value);
+    addGoogleField(transportForm, GOOGLE_FORM_FIELDS.divisionComments, document.getElementById("divisionComments").value);
+    addGoogleField(transportForm, GOOGLE_FORM_FIELDS.name, document.getElementById("name").value);
+    addGoogleField(transportForm, GOOGLE_FORM_FIELDS.designation, document.getElementById("designation").value);
+    addGoogleField(transportForm, GOOGLE_FORM_FIELDS.mobile, document.getElementById("mobile").value);
+    addGoogleField(transportForm, GOOGLE_FORM_FIELDS.email, document.getElementById("email").value);
+    addGoogleField(transportForm, GOOGLE_FORM_FIELDS.participation, participation ? participation.value : "");
+    addGoogleField(transportForm, GOOGLE_FORM_FIELDS.trainingImportance, importance ? importance.value : "");
+    addGoogleMultiField(transportForm, GOOGLE_FORM_FIELDS.topics, topics);
+    addGoogleField(transportForm, GOOGLE_FORM_FIELDS.currentProblems, document.getElementById("currentProblems").value);
+    addGoogleField(transportForm, GOOGLE_FORM_FIELDS.additionalTraining, document.getElementById("additionalTraining").value);
+    addGoogleField(transportForm, GOOGLE_FORM_FIELDS.comments, document.getElementById("comments").value);
+
+    document.body.appendChild(transportForm);
+
+    var finished = false;
+
+    function finishSuccess() {
+      if (finished) return;
+      finished = true;
+
+      button.disabled = false;
+      button.innerText = "تربیتی فارم جمع کریں";
+      message.className = "message success";
+      message.innerText = "✓ آپ کی معلومات کامیابی سے جمع ہو گئی ہیں۔ شکریہ۔";
+      message.scrollIntoView({ behavior: "smooth", block: "center" });
+
+      originalForm.reset();
+      divisionCode.value = "";
+      divisionDisplay.classList.add("empty");
+      divisionDisplay.textContent = "Sub-Division منتخب کریں";
+
+      if (transportForm.parentNode) {
+        transportForm.parentNode.removeChild(transportForm);
+      }
+    }
+
+    function finishError() {
+      if (finished) return;
+      finished = true;
+      button.disabled = false;
+      button.innerText = "تربیتی فارم جمع کریں";
+      message.className = "message error";
+      message.innerText = "معلومات محفوظ نہیں ہو سکیں۔ براہِ کرم دوبارہ کوشش کریں۔";
+    }
+
+    googleSubmitFrame.onload = function() {
+      finishSuccess();
+    };
+
+    transportForm.submit();
+
+    /* Google Forms receives a normal browser POST.
+       The short delay prevents a mobile iframe load quirk from leaving
+       the button stuck, while the POST itself is already sent. */
+    window.setTimeout(function() {
+      if (!finished) finishSuccess();
+    }, 2500);
+
+  });
 </script>
 
 
