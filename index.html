@@ -1,0 +1,2015 @@
+<!DOCTYPE html>
+<!DOCTYPE html>
+
+<html lang="ur" dir="rtl">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0">
+
+<title>
+LESCO IT Directorate – Training Survey
+</title>
+
+
+<link rel="preconnect"
+      href="https://fonts.googleapis.com">
+
+<link rel="preconnect"
+      href="https://fonts.gstatic.com"
+      crossorigin>
+
+
+<link
+href="https://fonts.googleapis.com/css2?family=Noto+Nastaliq+Urdu:wght@400;500;600;700&display=swap"
+rel="stylesheet">
+
+
+<style>
+
+/* =====================================================
+   GENERAL
+   ===================================================== */
+
+* {
+  box-sizing: border-box;
+}
+
+
+html {
+  scroll-behavior: smooth;
+}
+
+
+body {
+
+  margin: 0;
+
+  min-height: 100vh;
+
+  background:
+    linear-gradient(
+      135deg,
+      #edf7ff,
+      #f8fbff,
+      #edf5fb
+    );
+
+  color: #172033;
+
+  font-family:
+    "Noto Nastaliq Urdu",
+    "Jameel Noori Nastaleeq",
+    serif;
+
+  direction: rtl;
+}
+
+
+/* =====================================================
+   PAGE
+   ===================================================== */
+
+.page {
+
+  max-width: 1100px;
+
+  margin: 25px auto;
+
+  background: #ffffff;
+
+  border-radius: 22px;
+
+  overflow: hidden;
+
+  box-shadow:
+    0 20px 55px rgba(20,65,100,.15);
+}
+
+
+/* =====================================================
+   HEADER
+   ===================================================== */
+
+.header {
+
+  background:
+    linear-gradient(
+      135deg,
+      #087ac7,
+      #075da3
+    );
+
+  color: white;
+
+  padding: 20px 28px;
+
+  display: flex;
+
+  align-items: center;
+
+  gap: 18px;
+}
+
+
+.logo {
+
+  width: 70px;
+
+  height: 70px;
+
+  object-fit: contain;
+
+  background: white;
+
+  border-radius: 50%;
+
+  padding: 5px;
+
+  flex-shrink: 0;
+
+  box-shadow:
+    0 5px 18px rgba(0,0,0,.18);
+}
+
+
+.header-text {
+  flex: 1;
+}
+
+
+.header-title {
+
+  font-family:
+    Arial,
+    sans-serif;
+
+  font-size: 28px;
+
+  font-weight: 700;
+
+  direction: ltr;
+
+  text-align: right;
+
+  margin-bottom: 3px;
+}
+
+
+.header-subtitle {
+
+  font-size: 18px;
+
+  opacity: .96;
+}
+
+
+/* =====================================================
+   CONTACTS
+   ===================================================== */
+
+.contacts {
+
+  padding: 17px 28px;
+
+  background: #f5faff;
+
+  border-bottom: 1px solid #dce9f5;
+
+  display: grid;
+
+  grid-template-columns:
+    repeat(2, 1fr);
+
+  gap: 16px;
+}
+
+
+.contact-card {
+
+  background: white;
+
+  border:
+    1px solid #d7e5f1;
+
+  border-radius: 14px;
+
+  padding: 11px 18px;
+
+  text-align: right;
+}
+
+
+.contact-label {
+
+  font-family: Arial, sans-serif;
+
+  font-size: 11px;
+
+  color: #71839a;
+
+  direction: ltr;
+
+  text-align: right;
+}
+
+
+.contact-name {
+
+  font-family: Arial, sans-serif;
+
+  color: #086ab2;
+
+  font-size: 17px;
+
+  font-weight: bold;
+
+  direction: ltr;
+
+  text-align: right;
+}
+
+
+.contact-phone {
+
+  font-family: Arial, sans-serif;
+
+  color: #42556b;
+
+  font-size: 14px;
+
+  direction: ltr;
+
+  text-align: right;
+}
+
+
+/* =====================================================
+   CONTENT
+   ===================================================== */
+
+.content {
+
+  padding: 30px;
+}
+
+
+.intro {
+
+  margin-bottom: 24px;
+}
+
+
+.intro h1 {
+
+  font-size: 27px;
+
+  color: #10243d;
+
+  margin:
+    0 0 10px 0;
+}
+
+
+.intro p {
+
+  color: #566a80;
+
+  font-size: 16px;
+
+  line-height: 2;
+
+  margin: 4px 0;
+}
+
+
+/* =====================================================
+   SECTION
+   ===================================================== */
+
+.section {
+
+  background:
+    linear-gradient(
+      180deg,
+      #ffffff,
+      #fbfdff
+    );
+
+  border:
+    1px solid #d9e7f3;
+
+  border-radius: 18px;
+
+  padding: 24px;
+
+  margin-bottom: 22px;
+
+  box-shadow:
+    0 5px 18px rgba(0,60,110,.04);
+}
+
+
+.section-title {
+
+  display: flex;
+
+  align-items: center;
+
+  gap: 11px;
+
+  color: #086ab2;
+
+  font-size: 21px;
+
+  font-weight: 700;
+
+  margin-bottom: 21px;
+}
+
+
+.number {
+
+  width: 36px;
+
+  height: 36px;
+
+  background: #0875c1;
+
+  color: white;
+
+  border-radius: 50%;
+
+  display: flex;
+
+  justify-content: center;
+
+  align-items: center;
+
+  font-family: Arial, sans-serif;
+
+  font-size: 14px;
+
+  direction: ltr;
+}
+
+
+/* =====================================================
+   FORM GRID
+   ===================================================== */
+
+.grid {
+
+  display: grid;
+
+  grid-template-columns:
+    repeat(2, minmax(0,1fr));
+
+  gap: 18px 20px;
+}
+
+
+.field {
+
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 7px;
+}
+
+
+.full {
+
+  grid-column: 1 / -1;
+}
+
+
+label {
+
+  color: #263d56;
+
+  font-size: 15px;
+
+  font-weight: 600;
+}
+
+
+.required {
+
+  color: #d32f2f;
+}
+
+
+/* =====================================================
+   INPUT
+   ===================================================== */
+
+input,
+select,
+textarea {
+
+  width: 100%;
+
+  border:
+    1px solid #c9dbea;
+
+  border-radius: 10px;
+
+  background: #ffffff;
+
+  color: #172033;
+
+  padding: 11px 14px;
+
+  font-family:
+    "Noto Nastaliq Urdu",
+    Arial,
+    sans-serif;
+
+  font-size: 15px;
+
+  outline: none;
+
+  transition: .2s;
+}
+
+
+input,
+select {
+
+  min-height: 48px;
+}
+
+
+textarea {
+
+  min-height: 115px;
+
+  resize: vertical;
+
+  line-height: 2;
+}
+
+
+input:focus,
+select:focus,
+textarea:focus {
+
+  border-color: #0875c1;
+
+  box-shadow:
+    0 0 0 3px rgba(8,117,193,.10);
+}
+
+
+/* =====================================================
+   AUTO DIVISION
+   ===================================================== */
+
+.auto-division {
+
+  background:
+    #f2f8fd;
+
+  border:
+    1px solid #cbdfea;
+
+  border-radius: 10px;
+
+  min-height: 48px;
+
+  padding: 10px 14px;
+
+  color: #086ab2;
+
+  font-family: Arial, sans-serif;
+
+  font-size: 17px;
+
+  font-weight: bold;
+
+  direction: ltr;
+
+  text-align: right;
+
+  display: flex;
+
+  align-items: center;
+}
+
+
+.auto-division.empty {
+
+  color: #9aaaba;
+
+  font-family:
+    "Noto Nastaliq Urdu",
+    serif;
+
+  font-weight: normal;
+}
+
+
+/* =====================================================
+   OPTIONS
+   ===================================================== */
+
+.options {
+
+  display: grid;
+
+  grid-template-columns:
+    repeat(2, minmax(0,1fr));
+
+  gap: 9px;
+
+  margin-top: 3px;
+}
+
+
+.option {
+
+  display: flex;
+
+  flex-direction: row;
+
+  align-items: center;
+
+  gap: 8px;
+
+  background: #f7fbff;
+
+  border:
+    1px solid #d9e7f3;
+
+  border-radius: 9px;
+
+  padding: 9px 12px;
+
+  cursor: pointer;
+
+  transition: .2s;
+}
+
+
+.option:hover {
+
+  background: #edf7ff;
+
+  border-color: #a9cee8;
+}
+
+
+.option input {
+
+  width: auto;
+
+  min-height: auto;
+
+  accent-color: #0875c1;
+}
+
+
+/* =====================================================
+   BUTTON
+   ===================================================== */
+
+.submit-area {
+
+  text-align: center;
+
+  padding:
+    8px 0 4px;
+}
+
+
+button {
+
+  border: none;
+
+  border-radius: 12px;
+
+  background:
+    linear-gradient(
+      135deg,
+      #087ac7,
+      #075fa5
+    );
+
+  color: white;
+
+  padding:
+    13px 44px;
+
+  font-family:
+    "Noto Nastaliq Urdu",
+    serif;
+
+  font-size: 17px;
+
+  font-weight: 700;
+
+  cursor: pointer;
+
+  box-shadow:
+    0 8px 22px rgba(7,95,165,.22);
+
+  transition: .2s;
+}
+
+
+button:hover {
+
+  transform:
+    translateY(-2px);
+}
+
+
+button:disabled {
+
+  opacity: .65;
+
+  cursor: wait;
+
+  transform: none;
+}
+
+
+/* =====================================================
+   MESSAGE
+   ===================================================== */
+
+.message {
+
+  display: none;
+
+  margin-top: 16px;
+
+  padding: 13px;
+
+  border-radius: 10px;
+
+  text-align: center;
+
+  line-height: 2;
+}
+
+
+.success {
+
+  display: block;
+
+  background: #ecfff7;
+
+  border: 1px solid #9be7c7;
+
+  color: #087a50;
+}
+
+
+.error {
+
+  display: block;
+
+  background: #fff1f1;
+
+  border: 1px solid #efb0b0;
+
+  color: #a62020;
+}
+
+
+/* =====================================================
+   FOOTER
+   ===================================================== */
+
+.footer {
+
+  padding: 20px;
+
+  text-align: center;
+
+  border-top:
+    1px solid #e1eaf2;
+
+  background: #fafcff;
+
+  font-family: Arial, sans-serif;
+
+  direction: ltr;
+
+  color: #62758b;
+
+  font-size: 13px;
+
+  line-height: 1.8;
+}
+
+
+.footer strong {
+  color: #1769a8;
+}
+
+
+/* =====================================================
+   MOBILE
+   ===================================================== */
+
+@media (max-width: 800px) {
+
+  .page {
+
+    margin: 0;
+
+    border-radius: 0;
+  }
+
+
+  .header {
+
+    padding: 17px;
+
+  }
+
+
+  .logo {
+
+    width: 58px;
+
+    height: 58px;
+  }
+
+
+  .header-title {
+
+    font-size: 21px;
+  }
+
+
+  .header-subtitle {
+
+    font-size: 15px;
+  }
+
+
+  .contacts {
+
+    grid-template-columns: 1fr;
+
+    padding: 14px;
+  }
+
+
+  .content {
+
+    padding: 17px;
+  }
+
+
+  .grid {
+
+    grid-template-columns: 1fr;
+  }
+
+
+  .full {
+
+    grid-column: auto;
+  }
+
+
+  .options {
+
+    grid-template-columns: 1fr;
+  }
+
+
+  .section {
+
+    padding: 18px;
+  }
+
+}
+
+
+@media (max-width: 480px) {
+
+  .header-title {
+
+    font-size: 18px;
+  }
+
+
+  .header-subtitle {
+
+    font-size: 13px;
+  }
+
+
+  .intro h1 {
+
+    font-size: 23px;
+  }
+
+
+  button {
+
+    width: 100%;
+  }
+
+}
+
+</style>
+
+</head>
+
+
+<body>
+
+
+<div class="page">
+
+
+<!-- =====================================================
+     HEADER
+     ===================================================== -->
+
+<header class="header">
+
+  <img
+    class="logo"
+    src="https://drive.google.com/uc?export=view&id=1d19tVual89zVKDzmX0_kxE5MOqu8MPNT"
+    alt="LESCO Logo"
+    onerror="this.style.display='none';"
+  >
+
+  <div class="header-text">
+
+    <div class="header-title">
+      LESCO IT Directorate
+    </div>
+
+    <div class="header-subtitle">
+      تربیتی ضروریات اور شرکت کا سروے
+    </div>
+
+  </div>
+
+</header>
+
+
+<!-- =====================================================
+     CONTACTS
+     ===================================================== -->
+
+<div class="contacts">
+
+
+  <div class="contact-card">
+
+    <div class="contact-label">
+      TRAINING INCHARGE
+    </div>
+
+    <div class="contact-name">
+      Ali Waqas Tiwana
+    </div>
+
+    <div class="contact-phone">
+      ☎ 0370-4999958
+    </div>
+
+  </div>
+
+
+  <div class="contact-card">
+
+    <div class="contact-label">
+      TRAINER / IT DIRECTORATE SUPPORT
+    </div>
+
+    <div class="contact-name">
+      Imran Ahmad
+    </div>
+
+    <div class="contact-phone">
+      ☎ 0370-4990997
+    </div>
+
+  </div>
+
+
+</div>
+
+
+<!-- =====================================================
+     CONTENT
+     ===================================================== -->
+
+<main class="content">
+
+
+<div class="intro">
+
+  <h1>
+    تربیتی ضروریات کا سروے
+  </h1>
+
+  <p>
+    یہ سروے Sub-Division کے Auditors اور Supervisors کی
+    تربیتی ضروریات، عملی مشکلات اور Training میں شرکت کی
+    دلچسپی معلوم کرنے کے لیے تیار کیا گیا ہے۔
+  </p>
+
+  <p>
+    آپ کی فراہم کردہ معلومات کی بنیاد پر IT Directorate
+    عملی اور Field-oriented Training کی منصوبہ بندی کرے گا۔
+  </p>
+
+</div>
+
+
+<form id="trainingForm">
+
+
+<!-- =====================================================
+     SECTION 01
+     ===================================================== -->
+
+<section class="section">
+
+<div class="section-title">
+
+  <span class="number">
+    01
+  </span>
+
+  <span>
+    شرکاء کی معلومات
+  </span>
+
+</div>
+
+
+<div class="grid">
+
+
+<!-- SUB DIVISION -->
+
+<div class="field">
+
+<label>
+  Sub-Division
+  <span class="required">*</span>
+</label>
+
+
+<select
+  id="subDivision"
+  name="subDivision"
+  required
+  tabindex="1"
+>
+
+<option value="">
+  Sub-Division منتخب کریں
+</option>
+
+${subDivisionOptions}
+
+</select>
+
+</div>
+
+
+<!-- AUTOMATIC DIVISION -->
+
+<div class="field">
+
+<label>
+  Division
+</label>
+
+
+<div
+  id="divisionDisplay"
+  class="auto-division empty"
+>
+  Sub-Division منتخب کریں
+</div>
+
+
+<input
+  type="hidden"
+  id="divisionCode"
+  name="divisionCode"
+>
+
+
+</div>
+
+
+<!-- DIVISION COMMENTS -->
+
+<div class="field full">
+
+<label>
+  Division کے Comments / ضروریات
+</label>
+
+
+<textarea
+  id="divisionComments"
+  name="divisionComments"
+  tabindex="2"
+  placeholder="Division کی طرف سے Training کے متعلق ضروریات یا Comments درج کریں..."
+></textarea>
+
+</div>
+
+
+<!-- NAME -->
+
+<div class="field">
+
+<label>
+
+  نام
+
+  <span class="required">*</span>
+
+</label>
+
+
+<input
+  type="text"
+  id="name"
+  name="name"
+  required
+  tabindex="3"
+  placeholder="اپنا مکمل نام درج کریں"
+>
+
+</div>
+
+
+<!-- DESIGNATION -->
+
+<div class="field">
+
+<label>
+
+  عہدہ
+
+  <span class="required">*</span>
+
+</label>
+
+
+<select
+  id="designation"
+  name="designation"
+  required
+  tabindex="4"
+>
+
+<option value="">
+  عہدہ منتخب کریں
+</option>
+
+<option value="Auditor">
+  Auditor
+</option>
+
+<option value="Supervisor">
+  Supervisor
+</option>
+
+<option value="Other">
+  Other
+</option>
+
+</select>
+
+</div>
+
+
+<!-- MOBILE -->
+
+<div class="field">
+
+<label>
+
+  موبائل نمبر
+
+  <span class="required">*</span>
+
+</label>
+
+
+<input
+  type="tel"
+  id="mobile"
+  name="mobile"
+  required
+  tabindex="5"
+  placeholder="03XX-XXXXXXX"
+>
+
+</div>
+
+
+<!-- EMAIL -->
+
+<div class="field">
+
+<label>
+  Email
+</label>
+
+
+<input
+  type="email"
+  id="email"
+  name="email"
+  tabindex="6"
+  placeholder="example@gmail.com"
+>
+
+</div>
+
+
+</div>
+
+</section>
+
+
+<!-- =====================================================
+     SECTION 02
+     ===================================================== -->
+
+<section class="section">
+
+<div class="section-title">
+
+  <span class="number">
+    02
+  </span>
+
+  <span>
+    Training میں شرکت
+  </span>
+
+</div>
+
+
+<div class="field">
+
+<label>
+
+  کیا آپ Training میں شرکت کرنا چاہتے ہیں؟
+
+  <span class="required">*</span>
+
+</label>
+
+
+<div class="options">
+
+
+<label class="option">
+
+  <input
+    type="radio"
+    name="participation"
+    value="Yes"
+    required
+    tabindex="7"
+  >
+
+  <span>
+    جی ہاں
+  </span>
+
+</label>
+
+
+<label class="option">
+
+  <input
+    type="radio"
+    name="participation"
+    value="No"
+    tabindex="8"
+  >
+
+  <span>
+    نہیں
+  </span>
+
+</label>
+
+
+<label class="option">
+
+  <input
+    type="radio"
+    name="participation"
+    value="Maybe"
+    tabindex="9"
+  >
+
+  <span>
+    ممکن ہے
+  </span>
+
+</label>
+
+
+</div>
+
+</div>
+
+
+<br>
+
+
+<div class="field">
+
+<label>
+
+  Training کی اہمیت
+
+  <span class="required">*</span>
+
+</label>
+
+
+<div class="options">
+
+
+<label class="option">
+
+  <input
+    type="radio"
+    name="trainingImportance"
+    value="Very Important"
+    required
+    tabindex="10"
+  >
+
+  <span>
+    انتہائی اہم
+  </span>
+
+</label>
+
+
+<label class="option">
+
+  <input
+    type="radio"
+    name="trainingImportance"
+    value="Important"
+    tabindex="11"
+  >
+
+  <span>
+    اہم
+  </span>
+
+</label>
+
+
+<label class="option">
+
+  <input
+    type="radio"
+    name="trainingImportance"
+    value="Moderately Important"
+    tabindex="12"
+  >
+
+  <span>
+    درمیانی اہمیت
+  </span>
+
+</label>
+
+
+<label class="option">
+
+  <input
+    type="radio"
+    name="trainingImportance"
+    value="Not Required"
+    tabindex="13"
+  >
+
+  <span>
+    ضروری نہیں
+  </span>
+
+</label>
+
+
+</div>
+
+</div>
+
+</section>
+
+
+<!-- =====================================================
+     SECTION 03
+     ===================================================== -->
+
+<section class="section">
+
+<div class="section-title">
+
+  <span class="number">
+    03
+  </span>
+
+  <span>
+    مطلوبہ Training Topics
+  </span>
+
+</div>
+
+
+<div class="field">
+
+<label>
+  کن Topics پر Training درکار ہے؟
+</label>
+
+
+<div class="options">
+
+
+<label class="option">
+  <input
+    type="checkbox"
+    name="topic"
+    value="Mobile Meter Reading"
+  >
+  <span>Mobile Meter Reading</span>
+</label>
+
+
+<label class="option">
+  <input
+    type="checkbox"
+    name="topic"
+    value="Level-1 Software"
+  >
+  <span>Level-1 Software</span>
+</label>
+
+
+<label class="option">
+  <input
+    type="checkbox"
+    name="topic"
+    value="Pre-Enter Import"
+  >
+  <span>Pre-Enter Import</span>
+</label>
+
+
+<label class="option">
+  <input
+    type="checkbox"
+    name="topic"
+    value="Parts Generation"
+  >
+  <span>Parts Generation</span>
+</label>
+
+
+<label class="option">
+  <input
+    type="checkbox"
+    name="topic"
+    value="Field Meter Reading"
+  >
+  <span>Field Meter Reading</span>
+</label>
+
+
+<label class="option">
+  <input
+    type="checkbox"
+    name="topic"
+    value="Reading Export / Posting"
+  >
+  <span>Reading Export / Posting</span>
+</label>
+
+
+<label class="option">
+  <input
+    type="checkbox"
+    name="topic"
+    value="Snaps Import & Verification"
+  >
+  <span>Snaps Import & Verification</span>
+</label>
+
+
+<label class="option">
+  <input
+    type="checkbox"
+    name="topic"
+    value="Auditing"
+  >
+  <span>Auditing</span>
+</label>
+
+
+<label class="option">
+  <input
+    type="checkbox"
+    name="topic"
+    value="GBMR / IBMR"
+  >
+  <span>GBMR / IBMR</span>
+</label>
+
+
+<label class="option">
+  <input
+    type="checkbox"
+    name="topic"
+    value="Supervisor Import / Dump"
+  >
+  <span>Supervisor Import / Dump</span>
+</label>
+
+
+<label class="option">
+  <input
+    type="checkbox"
+    name="topic"
+    value="CP21C / CP34C"
+  >
+  <span>CP21C / CP34C</span>
+</label>
+
+
+<label class="option">
+  <input
+    type="checkbox"
+    name="topic"
+    value="Units Calculation"
+  >
+  <span>Units Calculation</span>
+</label>
+
+
+<label class="option">
+  <input
+    type="checkbox"
+    name="topic"
+    value="Level-1 Installation"
+  >
+  <span>Level-1 Installation</span>
+</label>
+
+
+<label class="option">
+  <input
+    type="checkbox"
+    name="topic"
+    value="Database Backup / Restore"
+  >
+  <span>Database Backup / Restore</span>
+</label>
+
+
+<label class="option">
+  <input
+    type="checkbox"
+    name="topic"
+    value="Tailscale"
+  >
+  <span>Tailscale</span>
+</label>
+
+
+<label class="option">
+  <input
+    type="checkbox"
+    name="topic"
+    value="Secure Manager"
+  >
+  <span>Secure Manager</span>
+</label>
+
+
+<label class="option">
+  <input
+    type="checkbox"
+    name="topic"
+    value="FTP Client 1.11"
+  >
+  <span>FTP Client 1.11</span>
+</label>
+
+
+</div>
+
+</div>
+
+</section>
+
+
+<!-- =====================================================
+     SECTION 04
+     ===================================================== -->
+
+<section class="section">
+
+<div class="section-title">
+
+  <span class="number">
+    04
+  </span>
+
+  <span>
+    موجودہ مسائل اور مشکلات
+  </span>
+
+</div>
+
+
+<div class="field full">
+
+<label>
+  Level-1 / IT Software میں موجودہ مسائل
+</label>
+
+
+<textarea
+  id="currentProblems"
+  name="currentProblems"
+  tabindex="14"
+  placeholder="اپنے موجودہ مسائل، Errors یا مشکلات کی تفصیل درج کریں..."
+></textarea>
+
+</div>
+
+</section>
+
+
+<!-- =====================================================
+     SECTION 05
+     ===================================================== -->
+
+<section class="section">
+
+<div class="section-title">
+
+  <span class="number">
+    05
+  </span>
+
+  <span>
+    اضافی Training Requirements
+  </span>
+
+</div>
+
+
+<div class="field full">
+
+<label>
+  کوئی اضافی موضوع، Training یا ضرورت؟
+</label>
+
+
+<textarea
+  id="additionalTraining"
+  name="additionalTraining"
+  tabindex="15"
+  placeholder="کوئی اضافی Training Topic یا ضرورت درج کریں..."
+></textarea>
+
+</div>
+
+
+<div class="field full">
+
+<label>
+  اضافی Comments / Suggestions
+</label>
+
+
+<textarea
+  id="comments"
+  name="comments"
+  tabindex="16"
+  placeholder="اپنی اضافی رائے یا تجاویز درج کریں..."
+></textarea>
+
+</div>
+
+</section>
+
+
+<!-- =====================================================
+     SUBMIT
+     ===================================================== -->
+
+<div class="submit-area">
+
+
+<button
+  type="submit"
+  id="submitButton"
+>
+  تربیتی فارم جمع کریں
+</button>
+
+
+<div
+  id="message"
+  class="message"
+></div>
+
+
+</div>
+
+
+</form>
+
+
+</main>
+
+
+<!-- =====================================================
+     FOOTER - ENGLISH ONLY
+     ===================================================== -->
+
+<footer class="footer">
+
+  <strong>LESCO IT Directorate</strong>
+
+  <br>
+
+  Training Incharge:
+  Ali Waqas Tiwana
+  |
+  0370-4999958
+
+  <br>
+
+  Trainer / IT Directorate Support:
+  Imran Ahmad
+  |
+  0370-4990997
+
+</footer>
+
+
+</div>
+
+
+<script>
+
+/* =====================================================
+   DIVISION MAP
+   ===================================================== */
+
+var divisionMap =
+  {"11111": "1111", "11112": "1111", "11113": "1111", "11114": "1111", "11115": "1111", "11116": "1111", "11124": "1112", "11129": "1112", "11131": "1113", "11132": "1113", "11133": "1113", "11134": "1113", "11135": "1113", "11141": "1114", "11143": "1114", "11144": "1114", "11145": "1114", "11151": "1115", "11153": "1115", "11154": "1115", "11155": "1115", "11161": "1116", "11162": "1116", "11163": "1116", "11164": "1116", "11166": "1116", "11219": "1121", "11221": "1122", "11222": "1122", "11224": "1122", "11225": "1122", "11231": "1123", "11238": "1123", "11241": "1124", "11242": "1124", "11243": "1124", "11244": "1124", "11245": "1124", "11251": "1125", "11252": "1125", "11253": "1125", "11254": "1125", "11264": "1126", "11271": "1127", "11274": "1127", "11311": "1131", "11312": "1131", "11313": "1131", "11314": "1131", "11315": "1131", "11316": "1131", "11331": "1133", "11332": "1133", "11333": "1133", "11334": "1133", "11335": "1133", "11341": "1134", "11342": "1134", "11343": "1134", "11344": "1134", "11345": "1134", "11346": "1134", "11347": "1134", "11351": "1135", "11352": "1135", "11353": "1135", "11354": "1135", "11412": "1141", "11414": "1141", "11417": "1141", "11418": "1141", "11421": "1142", "11422": "1142", "11423": "1142", "11424": "1142", "11431": "1143", "11432": "1143", "11433": "1143", "11434": "1143", "11451": "1145", "11452": "1145", "11453": "1145", "11454": "1145", "11455": "1145", "11456": "1145", "11462": "1146", "11463": "1146", "11465": "1146", "11466": "1146", "11511": "1151", "11512": "1151", "11513": "1151", "11514": "1151", "11515": "1151", "11516": "1151", "11521": "1152", "11522": "1152", "11523": "1152", "11527": "1152", "11531": "1153", "11533": "1153", "11534": "1153", "11536": "1153", "11537": "1153", "11541": "1154", "11542": "1154", "11543": "1154", "11545": "1154", "11551": "1155", "11552": "1155", "11553": "1155", "11554": "1155", "11561": "1156", "11562": "1156", "11563": "1156", "11564": "1156", "11571": "1157", "11574": "1157", "11575": "1157", "11576": "1157", "11611": "1161", "11612": "1161", "11613": "1161", "11614": "1161", "11631": "1163", "11632": "1163", "11633": "1163", "11634": "1163", "11635": "1163", "11641": "1164", "11642": "1164", "11643": "1164", "11644": "1164", "11645": "1164", "11711": "1171", "11712": "1171", "11714": "1171", "11723": "1172", "11725": "1172", "11726": "1172", "11727": "1172", "11731": "1173", "11732": "1173", "11734": "1173", "11739": "1173", "11741": "1174", "11743": "1174", "11744": "1174", "11745": "1174", "11746": "1174", "11747": "1174", "11751": "1175", "11752": "1175", "11753": "1175", "11754": "1175", "11811": "1181", "11812": "1181", "11813": "1181", "11814": "1181", "11821": "1182", "11822": "1182", "11823": "1182", "11824": "1182", "11831": "1183", "11832": "1183", "11833": "1183", "11834": "1183", "11841": "1184", "11842": "1184", "11844": "1184"};
+
+
+/* =====================================================
+   SUB-DIVISION CHANGE
+   ===================================================== */
+
+var subDivision =
+  document.getElementById("subDivision");
+
+var divisionDisplay =
+  document.getElementById("divisionDisplay");
+
+var divisionCode =
+  document.getElementById("divisionCode");
+
+
+subDivision.addEventListener(
+  "change",
+  function() {
+
+    var selected =
+      this.value;
+
+    var division =
+      divisionMap[selected] || "";
+
+    divisionCode.value =
+      division;
+
+
+    if (division) {
+
+      divisionDisplay
+        .classList
+        .remove("empty");
+
+      divisionDisplay.textContent =
+        division;
+
+    } else {
+
+      divisionDisplay
+        .classList
+        .add("empty");
+
+      divisionDisplay.textContent =
+        "Sub-Division منتخب کریں";
+    }
+
+  }
+);
+
+
+/* =====================================================
+   ENTER KEY → NEXT CONTROL
+   ===================================================== */
+
+document.addEventListener(
+  "keydown",
+  function(event) {
+
+    if (event.key !== "Enter") {
+      return;
+    }
+
+
+    var target =
+      event.target;
+
+
+    /*
+     * Textarea میں Enter نئی لائن کے لیے ہوگا۔
+     */
+
+    if (
+      target.tagName === "TEXTAREA"
+    ) {
+      return;
+    }
+
+
+    if (
+      target.tagName === "BUTTON"
+    ) {
+      return;
+    }
+
+
+    event.preventDefault();
+
+
+    var controls =
+      Array.prototype.slice.call(
+        document.querySelectorAll(
+          "input:not([type='hidden']), select, textarea"
+        )
+      );
+
+
+    var index =
+      controls.indexOf(target);
+
+
+    if (
+      index >= 0 &&
+      index < controls.length - 1
+    ) {
+
+      var next =
+        controls[index + 1];
+
+
+      /*
+       * Radio / checkbox میں اگلے
+       * individual control پر جانے کے بجائے
+       * اگلے field کو focus کرنے کی کوشش۔
+       */
+
+      if (
+        target.type === "radio" ||
+        target.type === "checkbox"
+      ) {
+
+        var currentName =
+          target.name;
+
+
+        for (
+          var i = index + 1;
+          i < controls.length;
+          i++
+        ) {
+
+          if (
+            controls[i].name !==
+            currentName
+          ) {
+
+            controls[i].focus();
+
+            return;
+          }
+
+        }
+
+      } else {
+
+        next.focus();
+
+        if (next.select) {
+
+          try {
+            next.select();
+          } catch(e) {}
+
+        }
+
+      }
+
+    }
+
+  }
+);
+
+
+/* =====================================================
+   FORM SUBMIT - PUBLIC FRONT-END
+   ===================================================== */
+
+var BACKEND_URL =
+  "https://script.google.com/macros/s/AKfycbxoO_42f3bmoefcefCNlHvGqdVFjUN41nk3plObIHaubWJqbDZgA2NZx2vlidIuQm8r/exec";
+
+document
+  .getElementById("trainingForm")
+  .addEventListener(
+    "submit",
+    function(event) {
+
+      event.preventDefault();
+
+      var button =
+        document.getElementById("submitButton");
+
+      var message =
+        document.getElementById("message");
+
+      button.disabled = true;
+      button.innerText = "محفوظ کیا جا رہا ہے...";
+
+      message.className = "message";
+      message.innerText = "";
+
+      var selectedTopics =
+        document.querySelectorAll(
+          "input[name='topic']:checked"
+        );
+
+      var topics = [];
+
+      selectedTopics.forEach(
+        function(item) {
+          topics.push(item.value);
+        }
+      );
+
+      var participation =
+        document.querySelector(
+          "input[name='participation']:checked"
+        );
+
+      var importance =
+        document.querySelector(
+          "input[name='trainingImportance']:checked"
+        );
+
+      var data = {
+
+        subDivision:
+          document.getElementById("subDivision").value,
+
+        divisionCode:
+          document.getElementById("divisionCode").value,
+
+        divisionComments:
+          document.getElementById("divisionComments").value,
+
+        name:
+          document.getElementById("name").value,
+
+        designation:
+          document.getElementById("designation").value,
+
+        mobile:
+          document.getElementById("mobile").value,
+
+        email:
+          document.getElementById("email").value,
+
+        participation:
+          participation
+            ? participation.value
+            : "",
+
+        trainingImportance:
+          importance
+            ? importance.value
+            : "",
+
+        topics:
+          topics.join(", "),
+
+        currentProblems:
+          document.getElementById("currentProblems").value,
+
+        additionalTraining:
+          document.getElementById("additionalTraining").value,
+
+        comments:
+          document.getElementById("comments").value
+      };
+
+      /*
+       * text/plain avoids a CORS preflight.
+       * The Apps Script doPost() receives the JSON body.
+       */
+      fetch(BACKEND_URL, {
+        method: "POST",
+        mode: "no-cors",
+        headers: {
+          "Content-Type": "text/plain;charset=UTF-8"
+        },
+        body: JSON.stringify(data)
+      })
+      .then(function() {
+
+        button.disabled = false;
+        button.innerText = "تربیتی فارم جمع کریں";
+
+        message.className = "message success";
+        message.innerText =
+          "✓ آپ کی معلومات کامیابی سے جمع ہو گئی ہیں۔ شکریہ۔";
+
+        message.scrollIntoView({
+          behavior: "smooth",
+          block: "center"
+        });
+
+        document
+          .getElementById("trainingForm")
+          .reset();
+
+        divisionCode.value = "";
+
+        divisionDisplay
+          .classList
+          .add("empty");
+
+        divisionDisplay.textContent =
+          "Sub-Division منتخب کریں";
+
+      })
+      .catch(function(error) {
+
+        button.disabled = false;
+        button.innerText = "تربیتی فارم جمع کریں";
+
+        message.className = "message error";
+        message.innerText =
+          "معلومات محفوظ نہیں ہو سکیں۔ براہِ کرم دوبارہ کوشش کریں۔";
+
+        message.scrollIntoView({
+          behavior: "smooth",
+          block: "center"
+        });
+
+      });
+
+    }
+  );</script>
+
+
+</body>
+
+</html>
