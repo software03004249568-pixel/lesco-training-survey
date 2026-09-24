@@ -2025,13 +2025,13 @@ document.addEventListener(
 
 
 /* =====================================================
-   FORM SUBMIT - GOOGLE FORMS MOBILE BACKEND
+   FORM SUBMIT - GOOGLE FORMS MOBILE SAFE
    ===================================================== */
 
-var GOOGLE_FORM_POST_URL =
+var FORM_POST_URL =
   "https://docs.google.com/forms/d/e/1FAIpQLSfcH3ynlbxQfrEV5_oqrCVRZU1dE5dNGLp1e5npf4v_yJOIiQ/formResponse";
 
-var GOOGLE_FORM_FIELDS = {
+var ENTRY = {
   subDivision: "entry.139899667",
   divisionCode: "entry.706623637",
   divisionComments: "entry.397790830",
@@ -2047,124 +2047,289 @@ var GOOGLE_FORM_FIELDS = {
   comments: "entry.1649703539"
 };
 
-var googleSubmitFrame = document.createElement("iframe");
-googleSubmitFrame.name = "googleFormSubmitFrame";
-googleSubmitFrame.id = "googleFormSubmitFrame";
-googleSubmitFrame.style.display = "none";
-googleSubmitFrame.setAttribute("aria-hidden", "true");
-document.body.appendChild(googleSubmitFrame);
 
-function addGoogleField(form, name, value) {
-  var input = document.createElement("input");
+/*
+ * Google Forms public endpoint is used directly.
+ * No Apps Script /exec, fetch(), CORS or no-cors is used.
+ */
+var googleFormFrame =
+  document.createElement("iframe");
+
+googleFormFrame.name = "googleFormSubmitFrame";
+googleFormFrame.id = "googleFormSubmitFrame";
+googleFormFrame.style.display = "none";
+
+document.body.appendChild(googleFormFrame);
+
+
+function addGoogleFormInput(form, name, value) {
+
+  var input =
+    document.createElement("input");
+
   input.type = "hidden";
   input.name = name;
-  input.value = value == null ? "" : String(value);
-  form.appendChild(input);
-}
+  input.value =
+    value == null ? "" : String(value);
 
-function addGoogleMultiField(form, name, values) {
-  values.forEach(function(value) {
-    addGoogleField(form, name, value);
-  });
+  form.appendChild(input);
 }
 
 
 document
   .getElementById("trainingForm")
-  .addEventListener("submit", function(event) {
+  .addEventListener(
+    "submit",
+    function(event) {
 
-    event.preventDefault();
+      event.preventDefault();
 
-    var originalForm = this;
+      var button =
+        document.getElementById("submitButton");
 
-    if (!originalForm.checkValidity()) {
-      originalForm.reportValidity();
-      return;
-    }
+      var message =
+        document.getElementById("message");
 
-    var button = document.getElementById("submitButton");
-    var message = document.getElementById("message");
+      button.disabled = true;
+      button.innerText =
+        "محفوظ کیا جا رہا ہے...";
 
-    var selectedTopics = document.querySelectorAll("input[name='topic']:checked");
-    var topics = [];
-    selectedTopics.forEach(function(item) { topics.push(item.value); });
+      message.className = "message";
+      message.innerText = "";
 
-    var participation = document.querySelector("input[name='participation']:checked");
-    var importance = document.querySelector("input[name='trainingImportance']:checked");
 
-    button.disabled = true;
-    button.innerText = "محفوظ کیا جا رہا ہے...";
-    message.className = "message";
-    message.innerText = "";
+      /*
+       * Create a fresh native HTML form.
+       */
+      var postForm =
+        document.createElement("form");
 
-    var transportForm = document.createElement("form");
-    transportForm.method = "POST";
-    transportForm.action = GOOGLE_FORM_POST_URL;
-    transportForm.target = "googleFormSubmitFrame";
-    transportForm.acceptCharset = "UTF-8";
-    transportForm.style.display = "none";
+      postForm.method = "POST";
+      postForm.action = FORM_POST_URL;
+      postForm.target =
+        "googleFormSubmitFrame";
 
-    addGoogleField(transportForm, GOOGLE_FORM_FIELDS.subDivision, document.getElementById("subDivision").value);
-    addGoogleField(transportForm, GOOGLE_FORM_FIELDS.divisionCode, document.getElementById("divisionCode").value);
-    addGoogleField(transportForm, GOOGLE_FORM_FIELDS.divisionComments, document.getElementById("divisionComments").value);
-    addGoogleField(transportForm, GOOGLE_FORM_FIELDS.name, document.getElementById("name").value);
-    addGoogleField(transportForm, GOOGLE_FORM_FIELDS.designation, document.getElementById("designation").value);
-    addGoogleField(transportForm, GOOGLE_FORM_FIELDS.mobile, document.getElementById("mobile").value);
-    addGoogleField(transportForm, GOOGLE_FORM_FIELDS.email, document.getElementById("email").value);
-    addGoogleField(transportForm, GOOGLE_FORM_FIELDS.participation, participation ? participation.value : "");
-    addGoogleField(transportForm, GOOGLE_FORM_FIELDS.trainingImportance, importance ? importance.value : "");
-    addGoogleMultiField(transportForm, GOOGLE_FORM_FIELDS.topics, topics);
-    addGoogleField(transportForm, GOOGLE_FORM_FIELDS.currentProblems, document.getElementById("currentProblems").value);
-    addGoogleField(transportForm, GOOGLE_FORM_FIELDS.additionalTraining, document.getElementById("additionalTraining").value);
-    addGoogleField(transportForm, GOOGLE_FORM_FIELDS.comments, document.getElementById("comments").value);
+      postForm.style.display = "none";
 
-    document.body.appendChild(transportForm);
 
-    var finished = false;
+      /*
+       * Normal text fields.
+       */
+      addGoogleFormInput(
+        postForm,
+        ENTRY.subDivision,
+        document.getElementById("subDivision").value
+      );
 
-    function finishSuccess() {
-      if (finished) return;
-      finished = true;
+      addGoogleFormInput(
+        postForm,
+        ENTRY.divisionCode,
+        document.getElementById("divisionCode").value
+      );
 
-      button.disabled = false;
-      button.innerText = "تربیتی فارم جمع کریں";
-      message.className = "message success";
-      message.innerText = "✓ آپ کی معلومات کامیابی سے جمع ہو گئی ہیں۔ شکریہ۔";
-      message.scrollIntoView({ behavior: "smooth", block: "center" });
+      addGoogleFormInput(
+        postForm,
+        ENTRY.divisionComments,
+        document.getElementById("divisionComments").value
+      );
 
-      originalForm.reset();
-      divisionCode.value = "";
-      divisionDisplay.classList.add("empty");
-      divisionDisplay.textContent = "Sub-Division منتخب کریں";
+      addGoogleFormInput(
+        postForm,
+        ENTRY.name,
+        document.getElementById("name").value
+      );
 
-      if (transportForm.parentNode) {
-        transportForm.parentNode.removeChild(transportForm);
+      addGoogleFormInput(
+        postForm,
+        ENTRY.designation,
+        document.getElementById("designation").value
+      );
+
+      addGoogleFormInput(
+        postForm,
+        ENTRY.mobile,
+        document.getElementById("mobile").value
+      );
+
+      addGoogleFormInput(
+        postForm,
+        ENTRY.email,
+        document.getElementById("email").value
+      );
+
+
+      /*
+       * Radio fields.
+       */
+      var participation =
+        document.querySelector(
+          "input[name='participation']:checked"
+        );
+
+      if (participation) {
+
+        addGoogleFormInput(
+          postForm,
+          ENTRY.participation,
+          participation.value
+        );
+
       }
+
+
+      var importance =
+        document.querySelector(
+          "input[name='trainingImportance']:checked"
+        );
+
+      if (importance) {
+
+        addGoogleFormInput(
+          postForm,
+          ENTRY.trainingImportance,
+          importance.value
+        );
+
+      }
+
+
+      /*
+       * IMPORTANT:
+       * Google Forms checkbox questions require
+       * one parameter for EACH selected option.
+       * Do NOT send them as one comma-separated value.
+       */
+      var selectedTopics =
+        document.querySelectorAll(
+          "input[name='topic']:checked"
+        );
+
+      selectedTopics.forEach(
+        function(item) {
+
+          addGoogleFormInput(
+            postForm,
+            ENTRY.topics,
+            item.value
+          );
+
+        }
+      );
+
+
+      /*
+       * Textareas.
+       */
+      addGoogleFormInput(
+        postForm,
+        ENTRY.currentProblems,
+        document.getElementById("currentProblems").value
+      );
+
+      addGoogleFormInput(
+        postForm,
+        ENTRY.additionalTraining,
+        document.getElementById("additionalTraining").value
+      );
+
+      addGoogleFormInput(
+        postForm,
+        ENTRY.comments,
+        document.getElementById("comments").value
+      );
+
+
+      document.body.appendChild(postForm);
+
+
+      /*
+       * Google Forms redirects the iframe after accepting
+       * the response. The iframe load is therefore used as
+       * the submission completion signal.
+       */
+      var completed = false;
+
+      googleFormFrame.onload =
+        function() {
+
+          if (completed) {
+            return;
+          }
+
+          completed = true;
+
+          button.disabled = false;
+          button.innerText =
+            "تربیتی فارم جمع کریں";
+
+          message.className =
+            "message success";
+
+          message.innerText =
+            "✓ آپ کی معلومات کامیابی سے جمع ہو گئی ہیں۔ شکریہ۔";
+
+          message.scrollIntoView({
+            behavior: "smooth",
+            block: "center"
+          });
+
+          document
+            .getElementById("trainingForm")
+            .reset();
+
+          divisionCode.value = "";
+
+          divisionDisplay
+            .classList
+            .add("empty");
+
+          divisionDisplay.textContent =
+            "Sub-Division منتخب کریں";
+
+          postForm.remove();
+        };
+
+
+      /*
+       * Submit directly to Google Forms.
+       */
+      postForm.submit();
+
+
+      /*
+       * Safety timeout.
+       * It prevents the button from remaining disabled forever.
+       */
+      window.clearTimeout(
+        window.lescoGoogleFormTimeout
+      );
+
+      window.lescoGoogleFormTimeout =
+        window.setTimeout(
+          function() {
+
+            if (!completed) {
+
+              button.disabled = false;
+
+              button.innerText =
+                "تربیتی فارم جمع کریں";
+
+              message.className =
+                "message error";
+
+              message.innerText =
+                "Google Form سے تصدیق موصول نہیں ہوئی۔ براہِ کرم Sheet میں response چیک کریں۔";
+
+            }
+
+          },
+          15000
+        );
+
     }
+  );
 
-    function finishError() {
-      if (finished) return;
-      finished = true;
-      button.disabled = false;
-      button.innerText = "تربیتی فارم جمع کریں";
-      message.className = "message error";
-      message.innerText = "معلومات محفوظ نہیں ہو سکیں۔ براہِ کرم دوبارہ کوشش کریں۔";
-    }
-
-    googleSubmitFrame.onload = function() {
-      finishSuccess();
-    };
-
-    transportForm.submit();
-
-    /* Google Forms receives a normal browser POST.
-       The short delay prevents a mobile iframe load quirk from leaving
-       the button stuck, while the POST itself is already sent. */
-    window.setTimeout(function() {
-      if (!finished) finishSuccess();
-    }, 2500);
-
-  });
 </script>
 
 
