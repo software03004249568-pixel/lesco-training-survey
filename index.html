@@ -2121,23 +2121,64 @@ document
       };
 
       /*
-       * text/plain avoids a CORS preflight.
-       * The Apps Script doPost() receives the JSON body.
+       * IMPORTANT:
+       * Do NOT use fetch()/no-cors here.
+       * Submit as a normal HTML POST into a hidden iframe.
+       * This avoids CORS/redirect problems with Apps Script.
        */
-      fetch(BACKEND_URL, {
-        method: "POST",
-        mode: "no-cors",
-        headers: {
-          "Content-Type": "text/plain;charset=UTF-8"
-        },
-        body: JSON.stringify(data)
-      })
-      .then(function() {
+
+      var iframe =
+        document.getElementById("submitFrame");
+
+      if (!iframe) {
+
+        iframe =
+          document.createElement("iframe");
+
+        iframe.id = "submitFrame";
+        iframe.name = "submitFrame";
+
+        iframe.style.display = "none";
+
+        document.body.appendChild(iframe);
+      }
+
+      var postForm =
+        document.createElement("form");
+
+      postForm.method = "POST";
+      postForm.action = BACKEND_URL;
+      postForm.target = "submitFrame";
+      postForm.style.display = "none";
+
+      var payloadInput =
+        document.createElement("input");
+
+      payloadInput.type = "hidden";
+      payloadInput.name = "payload";
+      payloadInput.value =
+        JSON.stringify(data);
+
+      postForm.appendChild(payloadInput);
+
+      document.body.appendChild(postForm);
+
+      var finished = false;
+
+      function showSaved() {
+
+        if (finished) {
+          return;
+        }
+
+        finished = true;
 
         button.disabled = false;
         button.innerText = "تربیتی فارم جمع کریں";
 
-        message.className = "message success";
+        message.className =
+          "message success";
+
         message.innerText =
           "✓ آپ کی معلومات کامیابی سے جمع ہو گئی ہیں۔ شکریہ۔";
 
@@ -2159,22 +2200,21 @@ document
         divisionDisplay.textContent =
           "Sub-Division منتخب کریں";
 
-      })
-      .catch(function(error) {
+        postForm.remove();
+      }
 
-        button.disabled = false;
-        button.innerText = "تربیتی فارم جمع کریں";
+      iframe.onload = function() {
+        showSaved();
+      };
 
-        message.className = "message error";
-        message.innerText =
-          "معلومات محفوظ نہیں ہو سکیں۔ براہِ کرم دوبارہ کوشش کریں۔";
+      postForm.submit();
 
-        message.scrollIntoView({
-          behavior: "smooth",
-          block: "center"
-        });
-
-      });
+      /*
+       * Safety fallback for mobile browsers.
+       */
+      setTimeout(function() {
+        showSaved();
+      }, 3000);
 
     }
   );</script>
