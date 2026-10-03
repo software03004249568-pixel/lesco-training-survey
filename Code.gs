@@ -2,7 +2,7 @@ const SPREADSHEET_ID = '1x3KKk_9i1114W16XcpafVcmaXs9dY5ggOr8UYaddA5U';
 
 // The existing Training Survey form ID from the previous HTML.
 // Leave blank ('') if you want the script to create a new Feedback form.
-const EXISTING_FORM_ID = '1FAIpQLSfcH3ynlbxQfrEV5_oqrCVRZU1dE5dNGLp1e5npf4v_yJOIiQ';
+const EXISTING_FORM_ID = ''; // Optional: put the actual Google Form EDIT ID here. Leave blank to reuse FormConfig when available.
 
 const RESPONSE_SHEET = 'Feedback Responses';
 const CONFIG_SHEET = 'FormConfig';
@@ -230,14 +230,47 @@ function createLescoFeedbackForm() {
   Logger.log('PUBLISHED_URL=' + form.getPublishedUrl());
 }
 
+function doGet() {
+  return HtmlService.createHtmlOutputFromFile('index')
+    .setTitle('LESCO IT Directorate – Training Feedback')
+    .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
+}
+
 function getOrCreateFeedbackForm_() {
+  // 1) If an actual Google Form EDIT ID is supplied, use it.
   if (EXISTING_FORM_ID) {
     try {
       return FormApp.openById(EXISTING_FORM_ID);
     } catch (err) {
-      Logger.log('Existing form could not be opened. A new form will be created. ' + err);
+      Logger.log('EXISTING_FORM_ID could not be opened: ' + err);
     }
   }
+
+  // 2) Otherwise reuse the Form ID saved in FormConfig from an earlier run.
+  try {
+    const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+    const config = ss.getSheetByName(CONFIG_SHEET);
+    if (config) {
+      const values = config.getDataRange().getValues();
+      for (let i = 0; i < values.length; i++) {
+        if (String(values[i][0]).trim() === 'FORM_EDIT_URL') {
+          const url = String(values[i][1] || '');
+          const match = url.match(/\/d\/([a-zA-Z0-9_-]+)\//);
+          if (match) {
+            try {
+              return FormApp.openById(match[1]);
+            } catch (err2) {
+              Logger.log('Saved FORM_EDIT_URL could not be opened: ' + err2);
+            }
+          }
+        }
+      }
+    }
+  } catch (err3) {
+    Logger.log('Could not read FormConfig: ' + err3);
+  }
+
+  // 3) No previous form found: create one.
   return FormApp.create('LESCO IT Directorate – Training Feedback Form');
 }
 
