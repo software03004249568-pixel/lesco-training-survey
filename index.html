@@ -261,75 +261,102 @@ input,select,textarea{width:100%;border:1px solid #c9dbea;border-radius:10px;bac
 </div>
 <script>
 var divisionMap = {"11111": "1111", "11112": "1111", "11113": "1111", "11114": "1111", "11115": "1111", "11116": "1111", "11124": "1112", "11129": "1112", "11131": "1113", "11132": "1113", "11133": "1113", "11134": "1113", "11135": "1113", "11141": "1114", "11143": "1114", "11144": "1114", "11145": "1114", "11151": "1115", "11153": "1115", "11154": "1115", "11155": "1115", "11161": "1116", "11162": "1116", "11163": "1116", "11164": "1116", "11166": "1116", "11219": "1121", "11221": "1122", "11222": "1122", "11224": "1122", "11225": "1122", "11231": "1123", "11238": "1123", "11241": "1124", "11242": "1124", "11243": "1124", "11244": "1124", "11245": "1124", "11251": "1125", "11252": "1125", "11253": "1125", "11254": "1125", "11264": "1126", "11271": "1127", "11274": "1127", "11311": "1131", "11312": "1131", "11313": "1131", "11314": "1131", "11315": "1131", "11316": "1131", "11331": "1133", "11332": "1133", "11333": "1133", "11334": "1133", "11335": "1133", "11341": "1134", "11342": "1134", "11343": "1134", "11344": "1134", "11345": "1134", "11346": "1134", "11347": "1134", "11351": "1135", "11352": "1135", "11353": "1135", "11354": "1135", "11412": "1141", "11414": "1141", "11417": "1141", "11418": "1141", "11421": "1142", "11422": "1142", "11423": "1142", "11424": "1142", "11431": "1143", "11432": "1143", "11433": "1143", "11434": "1143", "11451": "1145", "11452": "1145", "11453": "1145", "11454": "1145", "11455": "1145", "11456": "1145", "11462": "1146", "11463": "1146", "11465": "1146", "11466": "1146", "11511": "1151", "11512": "1151", "11513": "1151", "11514": "1151", "11515": "1151", "11516": "1151", "11521": "1152", "11522": "1152", "11523": "1152", "11527": "1152", "11531": "1153", "11533": "1153", "11534": "1153", "11536": "1153", "11537": "1153", "11541": "1154", "11542": "1154", "11543": "1154", "11545": "1154", "11551": "1155", "11552": "1155", "11553": "1155", "11554": "1155", "11561": "1156", "11562": "1156", "11563": "1156", "11564": "1156", "11571": "1157", "11574": "1157", "11575": "1157", "11576": "1157", "11611": "1161", "11612": "1161", "11613": "1161", "11614": "1161", "11631": "1163", "11632": "1163", "11633": "1163", "11634": "1163", "11635": "1163", "11641": "1164", "11642": "1164", "11643": "1164", "11644": "1164", "11645": "1164", "11711": "1171", "11712": "1171", "11714": "1171", "11723": "1172", "11725": "1172", "11726": "1172", "11727": "1172", "11731": "1173", "11732": "1173", "11734": "1173", "11739": "1173", "11741": "1174", "11743": "1174", "11744": "1174", "11745": "1174", "11746": "1174", "11747": "1174", "11751": "1175", "11752": "1175", "11753": "1175", "11754": "1175", "11811": "1181", "11812": "1181", "11813": "1181", "11814": "1181", "11821": "1182", "11822": "1182", "11823": "1182", "11824": "1182", "11831": "1183", "11832": "1183", "11833": "1183", "11834": "1183", "11841": "1184", "11842": "1184", "11844": "1184"};
-var subDivision=document.getElementById('subDivision'), divisionDisplay=document.getElementById('divisionDisplay'), divisionCode=document.getElementById('divisionCode');
-subDivision.addEventListener('change',function(){var d=divisionMap[this.value]||''; divisionCode.value=d; if(d){divisionDisplay.classList.remove('empty');divisionDisplay.textContent=d}else{divisionDisplay.classList.add('empty');divisionDisplay.textContent='Sub-Division منتخب کریں'}});
 
-// Google Apps Script Web App endpoint. This is the /exec URL shown in your current deployment.
-var FEEDBACK_API_URL = 'https://script.google.com/macros/s/AKfycbxOO_42f3bmoefecfNlHvGqdVFJUN41nk3plOblHaubWJqbDZgA2NZxv2idluQm8r/exec';
+var subDivision=document.getElementById('subDivision'), divisionDisplay=document.getElementById('divisionDisplay'), divisionCode=document.getElementById('divisionCode');
+subDivision.addEventListener('change',function(){
+  var selected=this.options[this.selectedIndex];
+  var d=selected.getAttribute('data-division')||'';
+  divisionCode.value=d;
+  if(d){divisionDisplay.classList.remove('empty');divisionDisplay.textContent=d}
+  else{divisionDisplay.classList.add('empty');divisionDisplay.textContent='Sub-Division منتخب کریں'}
+});
+
+var FEEDBACK_API_URL='https://script.google.com/macros/s/AKfycbxOO_42f3bmoefecfNlHvGqdVFJUN41nk3plOblHaubWJqbDZgA2NZxv2idluQm8r/exec';
 
 function value(id){var e=document.getElementById(id);return e?e.value:''}
 function checked(name){var e=document.querySelector('input[name="'+name+'"]:checked');return e?e.value:''}
 
+function addField(f,name,val){
+  var i=document.createElement('input');
+  i.type='hidden';
+  i.name=name;
+  i.value=val==null?'':String(val);
+  f.appendChild(i);
+}
+
 document.getElementById('feedbackForm').addEventListener('submit',function(event){
- event.preventDefault();
- var form=this, button=document.getElementById('submitButton'), message=document.getElementById('message');
- if(!form.checkValidity()){form.reportValidity();return}
- button.disabled=true;
- button.innerText='محفوظ کیا جا رہا ہے...';
- message.className='message success';
- message.innerText='Feedback جمع کیا جا رہا ہے...';
+  event.preventDefault();
 
- var transport=document.createElement('form');
- transport.method='POST';
- transport.action=FEEDBACK_API_URL;
- transport.target='lescoFeedbackResponse';
- transport.acceptCharset='UTF-8';
- transport.style.display='none';
+  var form=this;
+  var button=document.getElementById('submitButton');
+  var message=document.getElementById('message');
 
- function add(name,val){var i=document.createElement('input');i.type='hidden';i.name=name;i.value=val==null?'':String(val);transport.appendChild(i)}
- add('subDivision',value('subDivision'));
- add('divisionCode',value('divisionCode'));
- add('name',value('name'));
- add('designation',value('designation'));
- add('mobile',value('mobile'));
- add('email',value('email'));
- add('trainingSession',value('trainingSession'));
- add('trainer',value('trainer'));
- add('trainingDate',value('trainingDate'));
- add('contentQuality',checked('contentQuality'));
- add('trainerClarity',checked('trainerClarity'));
- add('practicalUsefulness',checked('practicalUsefulness'));
- add('duration',checked('duration'));
- add('materialQuality',checked('materialQuality'));
- add('overallSatisfaction',checked('overallSatisfaction'));
- var topics=[];document.querySelectorAll('input[name="topic"]:checked').forEach(function(e){topics.push(e.value)});add('topics',topics.join(', '));
- add('mostUseful',value('mostUseful'));
- add('problems',value('problems'));
- add('suggestions',value('suggestions'));
- add('futureTraining',value('futureTraining'));
- add('comments',value('comments'));
- add('futureParticipation',checked('futureParticipation'));
+  if(!form.checkValidity()){form.reportValidity();return}
 
- var frame=document.createElement('iframe');
- frame.name='lescoFeedbackResponse';
- frame.style.display='none';
- document.body.appendChild(frame);
- document.body.appendChild(transport);
- transport.submit();
+  button.disabled=true;
+  button.innerText='محفوظ کیا جا رہا ہے...';
+  message.className='message success';
+  message.innerText='Feedback محفوظ کیا جا رہا ہے...';
 
- setTimeout(function(){
-   button.disabled=false;
-   button.innerText='Feedback جمع کریں';
-   message.className='message success';
-   message.innerText='✓ آپ کا Feedback کامیابی سے جمع کر دیا گیا ہے۔ شکریہ۔';
-   message.scrollIntoView({behavior:'smooth',block:'center'});
-   form.reset();
-   divisionCode.value='';
-   divisionDisplay.classList.add('empty');
-   divisionDisplay.textContent='Sub-Division منتخب کریں';
-   if(transport.parentNode)transport.parentNode.removeChild(transport);
-   setTimeout(function(){if(frame.parentNode)frame.parentNode.removeChild(frame)},3000);
- },1500);
+  var transport=document.createElement('form');
+  transport.method='POST';
+  transport.action=FEEDBACK_API_URL;
+  transport.style.display='none';
+  transport.acceptCharset='UTF-8';
+
+  var frame=document.createElement('iframe');
+  var frameName='lescoFeedbackResponse_'+Date.now();
+  frame.name=frameName;
+  frame.style.display='none';
+  transport.target=frameName;
+
+  addField(transport,'subDivision',value('subDivision'));
+  addField(transport,'divisionCode',value('divisionCode'));
+  addField(transport,'name',value('name'));
+  addField(transport,'designation',value('designation'));
+  addField(transport,'mobile',value('mobile'));
+  addField(transport,'email',value('email'));
+  addField(transport,'trainingSession',value('trainingSession'));
+  addField(transport,'trainer',value('trainer'));
+  addField(transport,'trainingDate',value('trainingDate'));
+  addField(transport,'contentQuality',checked('contentQuality'));
+  addField(transport,'trainerClarity',checked('trainerClarity'));
+  addField(transport,'practicalUsefulness',checked('practicalUsefulness'));
+  addField(transport,'duration',checked('duration'));
+  addField(transport,'materialQuality',checked('materialQuality'));
+  addField(transport,'overallSatisfaction',checked('overallSatisfaction'));
+
+  var topics=[];
+  document.querySelectorAll('input[name="topic"]:checked').forEach(function(e){topics.push(e.value)});
+  addField(transport,'topics',topics.join(', '));
+
+  addField(transport,'mostUseful',value('mostUseful'));
+  addField(transport,'problems',value('problems'));
+  addField(transport,'suggestions',value('suggestions'));
+  addField(transport,'futureTraining',value('futureTraining'));
+  addField(transport,'comments',value('comments'));
+  addField(transport,'futureParticipation',checked('futureParticipation'));
+
+  document.body.appendChild(frame);
+  document.body.appendChild(transport);
+
+  transport.submit();
+
+  setTimeout(function(){
+    button.disabled=false;
+    button.innerText='Feedback جمع کریں';
+    message.className='message success';
+    message.innerText='✓ آپ کا Feedback کامیابی سے جمع کر دیا گیا ہے۔ شکریہ۔';
+    message.scrollIntoView({behavior:'smooth',block:'center'});
+
+    form.reset();
+    divisionCode.value='';
+    divisionDisplay.classList.add('empty');
+    divisionDisplay.textContent='Sub-Division منتخب کریں';
+
+    if(transport.parentNode)transport.parentNode.removeChild(transport);
+    setTimeout(function(){if(frame.parentNode)frame.parentNode.removeChild(frame)},3000);
+  },2000);
 });
 </script>
 </body>
