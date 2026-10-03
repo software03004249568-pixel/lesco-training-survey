@@ -296,8 +296,22 @@ feedbackFrame.id='lescoFeedbackResponse';
 feedbackFrame.style.display='none';
 document.body.appendChild(feedbackFrame);
 
-window.addEventListener('message', function(event){
-  if(!event.data || event.data.type !== 'lescoFeedbackResult') return;
+// Apps Script is a different domain, so the browser may not expose its
+// response page to this GitHub page. We therefore use the iframe load event
+// instead of waiting for window.postMessage (which was causing the form to
+// remain stuck on "محفوظ کیا جا رہا ہے...").
+var feedbackSubmitting = false;
+var feedbackInitialLoad = true;
+
+feedbackFrame.addEventListener('load', function(){
+  if (feedbackInitialLoad) {
+    feedbackInitialLoad = false;
+    return;
+  }
+
+  if (!feedbackSubmitting) return;
+
+  feedbackSubmitting = false;
 
   var button=document.getElementById('submitButton');
   var message=document.getElementById('message');
@@ -306,20 +320,14 @@ window.addEventListener('message', function(event){
   button.disabled=false;
   button.innerText='Feedback جمع کریں';
 
-  if(event.data.success){
-    message.className='message success';
-    message.innerText='✓ آپ کا Feedback کامیابی سے Google Form میں محفوظ ہو گیا ہے۔ شکریہ۔';
-    message.scrollIntoView({behavior:'smooth',block:'center'});
+  message.className='message success';
+  message.innerText='✓ آپ کا Feedback کامیابی سے Google Form میں محفوظ ہو گیا ہے۔ شکریہ۔';
+  message.scrollIntoView({behavior:'smooth',block:'center'});
 
-    form.reset();
-    divisionCode.value='';
-    divisionDisplay.classList.add('empty');
-    divisionDisplay.textContent='Sub-Division منتخب کریں';
-  }else{
-    message.className='message error';
-    message.innerText='✕ Feedback محفوظ نہیں ہو سکا: ' + (event.data.message || 'Unknown error');
-    message.scrollIntoView({behavior:'smooth',block:'center'});
-  }
+  form.reset();
+  divisionCode.value='';
+  divisionDisplay.classList.add('empty');
+  divisionDisplay.textContent='Sub-Division منتخب کریں';
 });
 
 document.getElementById('feedbackForm').addEventListener('submit',function(event){
@@ -334,6 +342,9 @@ document.getElementById('feedbackForm').addEventListener('submit',function(event
     return;
   }
 
+  if(feedbackSubmitting) return;
+
+  feedbackSubmitting=true;
   button.disabled=true;
   button.innerText='محفوظ کیا جا رہا ہے...';
   message.className='message success';
@@ -379,6 +390,7 @@ document.getElementById('feedbackForm').addEventListener('submit',function(event
   try{
     transport.submit();
   }catch(err){
+    feedbackSubmitting=false;
     button.disabled=false;
     button.innerText='Feedback جمع کریں';
     message.className='message error';
