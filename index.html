@@ -281,61 +281,45 @@ function checked(name){
   return e ? e.value : '';
 }
 
-function addField(form,name,val){
+function addFormData(data,name,val){
   if(!name) return;
-  var input=document.createElement('input');
-  input.type='hidden';
-  input.name=name;
-  input.value=val==null ? '' : String(val);
-  form.appendChild(input);
+  data.append(name, val == null ? '' : String(val));
 }
 
-var feedbackFrame = document.createElement('iframe');
-feedbackFrame.name='lescoFeedbackResponse';
-feedbackFrame.id='lescoFeedbackResponse';
-feedbackFrame.style.display='none';
-document.body.appendChild(feedbackFrame);
-
-// Apps Script is a different domain, so the browser may not expose its
-// response page to this GitHub page. We therefore use the iframe load event
-// instead of waiting for window.postMessage (which was causing the form to
-// remain stuck on "محفوظ کیا جا رہا ہے...").
 var feedbackSubmitting = false;
-var feedbackInitialLoad = true;
+var feedbackTimer = null;
 
-feedbackFrame.addEventListener('load', function(){
-  if (feedbackInitialLoad) {
-    feedbackInitialLoad = false;
-    return;
-  }
-
-  if (!feedbackSubmitting) return;
-
-  feedbackSubmitting = false;
+function finishFeedback(success, message, resetForm){
+  clearTimeout(feedbackTimer);
+  feedbackSubmitting=false;
 
   var button=document.getElementById('submitButton');
-  var message=document.getElementById('message');
+  var msg=document.getElementById('message');
   var form=document.getElementById('feedbackForm');
 
   button.disabled=false;
   button.innerText='Feedback جمع کریں';
 
-  message.className='message success';
-  message.innerText='✓ آپ کا Feedback کامیابی سے Google Form میں محفوظ ہو گیا ہے۔ شکریہ۔';
-  message.scrollIntoView({behavior:'smooth',block:'center'});
+  msg.className='message '+(success ? 'success' : 'error');
+  msg.innerText=(success ? '✓ ' : '✕ ')+message;
+  msg.scrollIntoView({behavior:'smooth',block:'center'});
 
-  form.reset();
-  divisionCode.value='';
-  divisionDisplay.classList.add('empty');
-  divisionDisplay.textContent='Sub-Division منتخب کریں';
-});
+  if(success && resetForm){
+    form.reset();
+    if(typeof divisionCode !== 'undefined') divisionCode.value='';
+    if(typeof divisionDisplay !== 'undefined'){
+      divisionDisplay.classList.add('empty');
+      divisionDisplay.textContent='Sub-Division منتخب کریں';
+    }
+  }
+}
 
-document.getElementById('feedbackForm').addEventListener('submit',function(event){
+document.getElementById('feedbackForm').addEventListener('submit',async function(event){
   event.preventDefault();
 
   var form=this;
   var button=document.getElementById('submitButton');
-  var message=document.getElementById('message');
+  var msg=document.getElementById('message');
 
   if(!form.checkValidity()){
     form.reportValidity();
@@ -347,55 +331,73 @@ document.getElementById('feedbackForm').addEventListener('submit',function(event
   feedbackSubmitting=true;
   button.disabled=true;
   button.innerText='محفوظ کیا جا رہا ہے...';
-  message.className='message success';
-  message.innerText='Feedback Google Form میں محفوظ کیا جا رہا ہے...';
+  msg.className='message success';
+  msg.innerText='Feedback Google Form میں محفوظ کیا جا رہا ہے...';
 
-  var transport=document.createElement('form');
-  transport.method='POST';
-  transport.action=FEEDBACK_API_URL;
-  transport.target='lescoFeedbackResponse';
-  transport.acceptCharset='UTF-8';
-  transport.style.display='none';
+  // Use fetch + no-cors instead of a hidden iframe. The iframe load event
+  // cannot reliably tell this GitHub page that Apps Script finished because
+  // Apps Script is on another origin.
+  var data=new FormData();
 
-  addField(transport,'subDivision',value('subDivision'));
-  addField(transport,'division',value('divisionCode'));
-  addField(transport,'name',value('name'));
-  addField(transport,'designation',value('designation'));
-  addField(transport,'mobile',value('mobile'));
-  addField(transport,'email',value('email'));
-  addField(transport,'trainingSession',value('trainingSession'));
-  addField(transport,'trainer',value('trainer'));
-  addField(transport,'trainingDate',value('trainingDate'));
+  addFormData(data,'subDivision',value('subDivision'));
+  addFormData(data,'division',value('divisionCode'));
+  addFormData(data,'name',value('name'));
+  addFormData(data,'designation',value('designation'));
+  addFormData(data,'mobile',value('mobile'));
+  addFormData(data,'email',value('email'));
+  addFormData(data,'trainingSession',value('trainingSession'));
+  addFormData(data,'trainer',value('trainer'));
+  addFormData(data,'trainingDate',value('trainingDate'));
 
-  addField(transport,'contentQuality',checked('contentQuality'));
-  addField(transport,'trainerClarity',checked('trainerClarity'));
-  addField(transport,'practicalUsefulness',checked('practicalUsefulness'));
-  addField(transport,'duration',checked('duration'));
-  addField(transport,'materialQuality',checked('materialQuality'));
-  addField(transport,'overallSatisfaction',checked('overallSatisfaction'));
+  addFormData(data,'contentQuality',checked('contentQuality'));
+  addFormData(data,'trainerClarity',checked('trainerClarity'));
+  addFormData(data,'practicalUsefulness',checked('practicalUsefulness'));
+  addFormData(data,'duration',checked('duration'));
+  addFormData(data,'materialQuality',checked('materialQuality'));
+  addFormData(data,'overallSatisfaction',checked('overallSatisfaction'));
 
   document.querySelectorAll('input[name="topic"]:checked').forEach(function(e){
-    addField(transport,'topics',e.value);
+    addFormData(data,'topics',e.value);
   });
 
-  addField(transport,'mostUseful',value('mostUseful'));
-  addField(transport,'problems',value('problems'));
-  addField(transport,'suggestions',value('suggestions'));
-  addField(transport,'futureTraining',value('futureTraining'));
-  addField(transport,'comments',value('comments'));
-  addField(transport,'futureParticipation',checked('futureParticipation'));
+  addFormData(data,'mostUseful',value('mostUseful'));
+  addFormData(data,'problems',value('problems'));
+  addFormData(data,'suggestions',value('suggestions'));
+  addFormData(data,'futureTraining',value('futureTraining'));
+  addFormData(data,'comments',value('comments'));
+  addFormData(data,'futureParticipation',checked('futureParticipation'));
 
-  document.body.appendChild(transport);
+  // Safety timeout: the page can never remain stuck indefinitely.
+  feedbackTimer=setTimeout(function(){
+    finishFeedback(false,
+      'سرور سے بروقت جواب نہیں ملا۔ براہِ کرم دوبارہ کوشش کریں۔',
+      false
+    );
+  },20000);
 
   try{
-    transport.submit();
+    await fetch(FEEDBACK_API_URL,{
+      method:'POST',
+      mode:'no-cors',
+      body:data,
+      credentials:'omit'
+    });
+
+    // no-cors intentionally returns an opaque response. A resolved fetch
+    // means the browser completed the cross-origin request. Apps Script then
+    // forwards it to Google Forms server-side.
+    finishFeedback(
+      true,
+      'آپ کا Feedback کامیابی سے Google Form میں محفوظ کر دیا گیا ہے۔ شکریہ۔',
+      true
+    );
+
   }catch(err){
-    feedbackSubmitting=false;
-    button.disabled=false;
-    button.innerText='Feedback جمع کریں';
-    message.className='message error';
-    message.innerText='✕ Feedback request نہیں بھیجی جا سکی: '+err.message;
-    if(transport.parentNode) transport.parentNode.removeChild(transport);
+    finishFeedback(
+      false,
+      'Feedback محفوظ نہیں ہو سکا: '+(err.message || 'Network error'),
+      false
+    );
   }
 });
 </script>
