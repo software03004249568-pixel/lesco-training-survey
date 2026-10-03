@@ -265,36 +265,11 @@ var subDivision=document.getElementById('subDivision'), divisionDisplay=document
 subDivision.addEventListener('change',function(){var d=divisionMap[this.value]||''; divisionCode.value=d; if(d){divisionDisplay.classList.remove('empty');divisionDisplay.textContent=d}else{divisionDisplay.classList.add('empty');divisionDisplay.textContent='Sub-Division منتخب کریں'}});
 
 // ============================================================
-// GOOGLE FORMS BACKEND
-// Direct POST to Google Forms formResponse endpoint.
+// LESCO GOOGLE FORMS BACKEND
+// Custom form -> Apps Script -> existing Google Form -> Sheet
 // ============================================================
 
-var GOOGLE_FORM_POST_URL = "https://docs.google.com/forms/d/e/1FAIpQLSdScbcWviS94qsiEMbGRWQ2BUe8JLOQY6kpYX5D3-th-xOKhg/formResponse";
-
-var GOOGLE_FORM_FIELDS = {
-  "subDivision": "entry.1671608206",
-  "division": "entry.669556226",
-  "name": "entry.635236034",
-  "designation": "entry.1003648302",
-  "mobile": "entry.476373809",
-  "email": "entry.1188349605",
-  "trainingSession": "entry.887861664",
-  "trainer": "entry.375892800",
-  "trainingDate": "entry.2127311515",
-  "contentQuality": "entry.295118859",
-  "trainerClarity": "entry.470011181",
-  "practicalUsefulness": "entry.602667747",
-  "duration": "entry.424298881",
-  "materialQuality": "entry.1323407214",
-  "overallSatisfaction": "entry.1978061490",
-  "topics": "entry.1066717342",
-  "mostUseful": "entry.1548141910",
-  "problems": "entry.2044022629",
-  "suggestions": "entry.1569165813",
-  "futureTraining": "entry.215921524",
-  "comments": "entry.180042675",
-  "futureParticipation": "entry.1017333608"
-};
+var FEEDBACK_API_URL = 'https://script.google.com/macros/s/AKfycbxOO_42f3bmoefecfNlHvGqdVFJUN41nk3plOblHaubWJqbDZgA2NZxv2idluQm8r/exec';
 
 function value(id){
   var e=document.getElementById(id);
@@ -306,14 +281,46 @@ function checked(name){
   return e ? e.value : '';
 }
 
-function addGoogleField(form, name, val){
-  if (!name) return;
+function addField(form,name,val){
+  if(!name) return;
   var input=document.createElement('input');
   input.type='hidden';
   input.name=name;
-  input.value=(val==null ? '' : String(val));
+  input.value=val==null ? '' : String(val);
   form.appendChild(input);
 }
+
+var feedbackFrame = document.createElement('iframe');
+feedbackFrame.name='lescoFeedbackResponse';
+feedbackFrame.id='lescoFeedbackResponse';
+feedbackFrame.style.display='none';
+document.body.appendChild(feedbackFrame);
+
+window.addEventListener('message', function(event){
+  if(!event.data || event.data.type !== 'lescoFeedbackResult') return;
+
+  var button=document.getElementById('submitButton');
+  var message=document.getElementById('message');
+  var form=document.getElementById('feedbackForm');
+
+  button.disabled=false;
+  button.innerText='Feedback جمع کریں';
+
+  if(event.data.success){
+    message.className='message success';
+    message.innerText='✓ آپ کا Feedback کامیابی سے Google Form میں محفوظ ہو گیا ہے۔ شکریہ۔';
+    message.scrollIntoView({behavior:'smooth',block:'center'});
+
+    form.reset();
+    divisionCode.value='';
+    divisionDisplay.classList.add('empty');
+    divisionDisplay.textContent='Sub-Division منتخب کریں';
+  }else{
+    message.className='message error';
+    message.innerText='✕ Feedback محفوظ نہیں ہو سکا: ' + (event.data.message || 'Unknown error');
+    message.scrollIntoView({behavior:'smooth',block:'center'});
+  }
+});
 
 document.getElementById('feedbackForm').addEventListener('submit',function(event){
   event.preventDefault();
@@ -328,58 +335,44 @@ document.getElementById('feedbackForm').addEventListener('submit',function(event
   }
 
   button.disabled=true;
-  button.innerText='جمع کیا جا رہا ہے...';
+  button.innerText='محفوظ کیا جا رہا ہے...';
   message.className='message success';
-  message.innerText='آپ کا Feedback جمع کیا جا رہا ہے...';
-
-  // Hidden iframe prevents the user from leaving the custom GitHub Pages form.
-  var frame=document.createElement('iframe');
-  frame.name='lescoGoogleFormResponse';
-  frame.id='lescoGoogleFormResponse';
-  frame.style.display='none';
-  document.body.appendChild(frame);
+  message.innerText='Feedback Google Form میں محفوظ کیا جا رہا ہے...';
 
   var transport=document.createElement('form');
   transport.method='POST';
-  transport.action=GOOGLE_FORM_POST_URL;
-  transport.target='lescoGoogleFormResponse';
+  transport.action=FEEDBACK_API_URL;
+  transport.target='lescoFeedbackResponse';
   transport.acceptCharset='UTF-8';
   transport.style.display='none';
 
-  // Participant information
-  addGoogleField(transport, GOOGLE_FORM_FIELDS.subDivision, value('subDivision'));
-  addGoogleField(transport, GOOGLE_FORM_FIELDS.division, value('divisionCode'));
-  addGoogleField(transport, GOOGLE_FORM_FIELDS.name, value('name'));
-  addGoogleField(transport, GOOGLE_FORM_FIELDS.designation, value('designation'));
-  addGoogleField(transport, GOOGLE_FORM_FIELDS.mobile, value('mobile'));
-  addGoogleField(transport, GOOGLE_FORM_FIELDS.email, value('email'));
+  addField(transport,'subDivision',value('subDivision'));
+  addField(transport,'division',value('divisionCode'));
+  addField(transport,'name',value('name'));
+  addField(transport,'designation',value('designation'));
+  addField(transport,'mobile',value('mobile'));
+  addField(transport,'email',value('email'));
+  addField(transport,'trainingSession',value('trainingSession'));
+  addField(transport,'trainer',value('trainer'));
+  addField(transport,'trainingDate',value('trainingDate'));
 
-  // Training information
-  addGoogleField(transport, GOOGLE_FORM_FIELDS.trainingSession, value('trainingSession'));
-  addGoogleField(transport, GOOGLE_FORM_FIELDS.trainer, value('trainer'));
-  addGoogleField(transport, GOOGLE_FORM_FIELDS.trainingDate, value('trainingDate'));
+  addField(transport,'contentQuality',checked('contentQuality'));
+  addField(transport,'trainerClarity',checked('trainerClarity'));
+  addField(transport,'practicalUsefulness',checked('practicalUsefulness'));
+  addField(transport,'duration',checked('duration'));
+  addField(transport,'materialQuality',checked('materialQuality'));
+  addField(transport,'overallSatisfaction',checked('overallSatisfaction'));
 
-  // Ratings
-  addGoogleField(transport, GOOGLE_FORM_FIELDS.contentQuality, checked('contentQuality'));
-  addGoogleField(transport, GOOGLE_FORM_FIELDS.trainerClarity, checked('trainerClarity'));
-  addGoogleField(transport, GOOGLE_FORM_FIELDS.practicalUsefulness, checked('practicalUsefulness'));
-  addGoogleField(transport, GOOGLE_FORM_FIELDS.duration, checked('duration'));
-  addGoogleField(transport, GOOGLE_FORM_FIELDS.materialQuality, checked('materialQuality'));
-  addGoogleField(transport, GOOGLE_FORM_FIELDS.overallSatisfaction, checked('overallSatisfaction'));
-
-  // Google Forms CHECKBOX item:
-  // send one entry parameter for every selected topic.
   document.querySelectorAll('input[name="topic"]:checked').forEach(function(e){
-    addGoogleField(transport, GOOGLE_FORM_FIELDS.topics, e.value);
+    addField(transport,'topics',e.value);
   });
 
-  // Open feedback
-  addGoogleField(transport, GOOGLE_FORM_FIELDS.mostUseful, value('mostUseful'));
-  addGoogleField(transport, GOOGLE_FORM_FIELDS.problems, value('problems'));
-  addGoogleField(transport, GOOGLE_FORM_FIELDS.suggestions, value('suggestions'));
-  addGoogleField(transport, GOOGLE_FORM_FIELDS.futureTraining, value('futureTraining'));
-  addGoogleField(transport, GOOGLE_FORM_FIELDS.comments, value('comments'));
-  addGoogleField(transport, GOOGLE_FORM_FIELDS.futureParticipation, checked('futureParticipation'));
+  addField(transport,'mostUseful',value('mostUseful'));
+  addField(transport,'problems',value('problems'));
+  addField(transport,'suggestions',value('suggestions'));
+  addField(transport,'futureTraining',value('futureTraining'));
+  addField(transport,'comments',value('comments'));
+  addField(transport,'futureParticipation',checked('futureParticipation'));
 
   document.body.appendChild(transport);
 
@@ -389,37 +382,9 @@ document.getElementById('feedbackForm').addEventListener('submit',function(event
     button.disabled=false;
     button.innerText='Feedback جمع کریں';
     message.className='message error';
-    message.innerText='Feedback جمع نہیں ہو سکا۔ براہِ کرم دوبارہ کوشش کریں۔';
+    message.innerText='✕ Feedback request نہیں بھیجی جا سکی: '+err.message;
     if(transport.parentNode) transport.parentNode.removeChild(transport);
-    if(frame.parentNode) frame.parentNode.removeChild(frame);
-    return;
   }
-
-  // Google Forms processes the POST inside the hidden iframe.
-  // Give it time to complete before showing the confirmation.
-  setTimeout(function(){
-    button.disabled=false;
-    button.innerText='Feedback جمع کریں';
-
-    message.className='message success';
-    message.innerText='✓ آپ کا Feedback کامیابی سے جمع کر دیا گیا ہے۔ شکریہ۔';
-    message.scrollIntoView({behavior:'smooth',block:'center'});
-
-    form.reset();
-    divisionCode.value='';
-    divisionDisplay.classList.add('empty');
-    divisionDisplay.textContent='Sub-Division منتخب کریں';
-
-    if(transport.parentNode){
-      transport.parentNode.removeChild(transport);
-    }
-
-    setTimeout(function(){
-      if(frame.parentNode){
-        frame.parentNode.removeChild(frame);
-      }
-    },3000);
-  },2000);
 });
 </script>
 </body>
