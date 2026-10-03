@@ -269,7 +269,7 @@ subDivision.addEventListener('change',function(){var d=divisionMap[this.value]||
 // Custom form -> Apps Script -> existing Google Form -> Sheet
 // ============================================================
 
-var FEEDBACK_API_URL = 'https://script.google.com/macros/s/AKfycbxOO_42f3bmoefecfNlHvGqdVFJUN41nk3plOblHaubWJqbDZgA2NZxv2idluQm8r/exec';
+var FEEDBACK_API_URL = 'https://script.google.com/macros/s/AKfycbxoO_42f3bmoefcefCNlHvGqdVFjUN41nk3plObIHaubWJqbDZgA2NZx2vlidIuQm8r/exec';
 
 function value(id){
   var e=document.getElementById(id);
@@ -292,113 +292,93 @@ var feedbackTimer = null;
 function finishFeedback(success, message, resetForm){
   clearTimeout(feedbackTimer);
   feedbackSubmitting=false;
-
   var button=document.getElementById('submitButton');
   var msg=document.getElementById('message');
   var form=document.getElementById('feedbackForm');
-
   button.disabled=false;
   button.innerText='Feedback جمع کریں';
-
   msg.className='message '+(success ? 'success' : 'error');
   msg.innerText=(success ? '✓ ' : '✕ ')+message;
   msg.scrollIntoView({behavior:'smooth',block:'center'});
-
   if(success && resetForm){
     form.reset();
-    if(typeof divisionCode !== 'undefined') divisionCode.value='';
-    if(typeof divisionDisplay !== 'undefined'){
-      divisionDisplay.classList.add('empty');
-      divisionDisplay.textContent='Sub-Division منتخب کریں';
-    }
+    divisionCode.value='';
+    divisionDisplay.classList.add('empty');
+    divisionDisplay.textContent='Sub-Division منتخب کریں';
   }
 }
 
-document.getElementById('feedbackForm').addEventListener('submit',async function(event){
+document.getElementById('feedbackForm').addEventListener('submit',function(event){
   event.preventDefault();
-
   var form=this;
-  var button=document.getElementById('submitButton');
-  var msg=document.getElementById('message');
-
-  if(!form.checkValidity()){
-    form.reportValidity();
-    return;
-  }
-
-  if(feedbackSubmitting) return;
+  if(!form.checkValidity()){form.reportValidity();return;}
+  if(feedbackSubmitting)return;
 
   feedbackSubmitting=true;
+  var button=document.getElementById('submitButton');
+  var msg=document.getElementById('message');
   button.disabled=true;
   button.innerText='محفوظ کیا جا رہا ہے...';
   msg.className='message success';
   msg.innerText='Feedback Google Form میں محفوظ کیا جا رہا ہے...';
 
-  // Use fetch + no-cors instead of a hidden iframe. The iframe load event
-  // cannot reliably tell this GitHub page that Apps Script finished because
-  // Apps Script is on another origin.
-  var data=new FormData();
+  var topics=[];
+  document.querySelectorAll('input[name="topic"]:checked').forEach(function(e){topics.push(e.value);});
 
-  addFormData(data,'subDivision',value('subDivision'));
-  addFormData(data,'division',value('divisionCode'));
-  addFormData(data,'name',value('name'));
-  addFormData(data,'designation',value('designation'));
-  addFormData(data,'mobile',value('mobile'));
-  addFormData(data,'email',value('email'));
-  addFormData(data,'trainingSession',value('trainingSession'));
-  addFormData(data,'trainer',value('trainer'));
-  addFormData(data,'trainingDate',value('trainingDate'));
+  var params=[
+    ['callback','lescoFeedbackCallback'],
+    ['subDivision',value('subDivision')],
+    ['divisionCode',value('divisionCode')],
+    ['name',value('name')],
+    ['designation',checked('designation')],
+    ['mobile',value('mobile')],
+    ['email',value('email')],
+    ['trainingSession',value('trainingSession')],
+    ['trainer',checked('trainer')],
+    ['trainingDate',value('trainingDate')],
+    ['contentQuality',checked('contentQuality')],
+    ['trainerClarity',checked('trainerClarity')],
+    ['practicalUsefulness',checked('practicalUsefulness')],
+    ['duration',checked('duration')],
+    ['materialQuality',checked('materialQuality')],
+    ['overallSatisfaction',checked('overallSatisfaction')],
+    ['mostUseful',value('mostUseful')],
+    ['problems',value('problems')],
+    ['suggestions',value('suggestions')],
+    ['futureTraining',value('futureTraining')],
+    ['comments',value('comments')],
+    ['futureParticipation',checked('futureParticipation')]
+  ];
+  topics.forEach(function(t){params.push(['topics',t]);});
 
-  addFormData(data,'contentQuality',checked('contentQuality'));
-  addFormData(data,'trainerClarity',checked('trainerClarity'));
-  addFormData(data,'practicalUsefulness',checked('practicalUsefulness'));
-  addFormData(data,'duration',checked('duration'));
-  addFormData(data,'materialQuality',checked('materialQuality'));
-  addFormData(data,'overallSatisfaction',checked('overallSatisfaction'));
+  window.lescoFeedbackCallback=function(result){
+    if(result && result.success){
+      finishFeedback(true,'آپ کا Feedback کامیابی سے Google Form میں محفوظ کر دیا گیا ہے۔ شکریہ۔',true);
+    }else{
+      finishFeedback(false,'Feedback محفوظ نہیں ہو سکا: '+((result&&result.message)||'Unknown server error'),false);
+    }
+    try{delete window.lescoFeedbackCallback;}catch(e){}
+  };
 
-  document.querySelectorAll('input[name="topic"]:checked').forEach(function(e){
-    addFormData(data,'topics',e.value);
-  });
+  var query=params.map(function(pair){
+    return encodeURIComponent(pair[0])+'='+encodeURIComponent(pair[1]==null?'':String(pair[1]));
+  }).join('&');
 
-  addFormData(data,'mostUseful',value('mostUseful'));
-  addFormData(data,'problems',value('problems'));
-  addFormData(data,'suggestions',value('suggestions'));
-  addFormData(data,'futureTraining',value('futureTraining'));
-  addFormData(data,'comments',value('comments'));
-  addFormData(data,'futureParticipation',checked('futureParticipation'));
+  var script=document.createElement('script');
+  script.async=true;
+  script.src=FEEDBACK_API_URL+'?'+query;
+  script.onerror=function(){
+    finishFeedback(false,'Server سے response نہیں ملا۔ براہِ کرم دوبارہ کوشش کریں۔',false);
+    try{delete window.lescoFeedbackCallback;}catch(e){}
+    if(script.parentNode)script.parentNode.removeChild(script);
+  };
+  document.body.appendChild(script);
 
-  // Safety timeout: the page can never remain stuck indefinitely.
   feedbackTimer=setTimeout(function(){
-    finishFeedback(false,
-      'سرور سے بروقت جواب نہیں ملا۔ براہِ کرم دوبارہ کوشش کریں۔',
-      false
-    );
+    finishFeedback(false,'Server response میں 20 سیکنڈ سے زیادہ وقت لگ گیا۔ براہِ کرم دوبارہ کوشش کریں۔',false);
+    try{delete window.lescoFeedbackCallback;}catch(e){}
+    if(script.parentNode)script.parentNode.removeChild(script);
   },20000);
-
-  try{
-    await fetch(FEEDBACK_API_URL,{
-      method:'POST',
-      mode:'no-cors',
-      body:data,
-      credentials:'omit'
-    });
-
-    // no-cors intentionally returns an opaque response. A resolved fetch
-    // means the browser completed the cross-origin request. Apps Script then
-    // forwards it to Google Forms server-side.
-    finishFeedback(
-      true,
-      'آپ کا Feedback کامیابی سے Google Form میں محفوظ کر دیا گیا ہے۔ شکریہ۔',
-      true
-    );
-
-  }catch(err){
-    finishFeedback(
-      false,
-      'Feedback محفوظ نہیں ہو سکا: '+(err.message || 'Network error'),
-      false
-    );
-  }
 });
 </script>
 </body>
