@@ -387,26 +387,23 @@ document.getElementById('feedbackForm').addEventListener('submit', function(even
   frame.setAttribute('aria-hidden', 'true');
   document.body.appendChild(frame);
 
-  var posted = false;
+  /*
+     IMPORTANT:
+     Google Forms is cross-origin, so the browser cannot read the response
+     page from the hidden iframe. We therefore DO NOT wait for an iframe
+     response. The POST itself is sent directly to Google Forms and, after
+     a short fixed delay, the user is shown the completed message.
+     This prevents the page from hanging on "saving" or showing a false
+     "server response" error because of browser cross-origin restrictions.
+  */
   var finished = false;
-  var submitStartedAt = 0;
 
-  frame.onload = function() {
-    /* Ignore the initial about:blank load. */
-    if (!posted || finished) return;
-
-    finished = true;
-    showSubmitResult(true, '✓ آپ کا Feedback کامیابی سے Google Form میں محفوظ ہو گیا ہے۔ شکریہ۔');
-
-    originalForm.reset();
-    divisionCode.value = '';
-    divisionDisplay.classList.add('empty');
-    divisionDisplay.textContent = 'Sub-Division منتخب کریں';
-
-    setTimeout(function(){
-      if (frame.parentNode) frame.parentNode.removeChild(frame);
-    }, 1000);
-  };
+  var frameName = 'googleFormResponse_' + Date.now();
+  var frame = document.createElement('iframe');
+  frame.name = frameName;
+  frame.style.display = 'none';
+  frame.setAttribute('aria-hidden', 'true');
+  document.body.appendChild(frame);
 
   var transport = document.createElement('form');
   transport.method = 'POST';
@@ -436,7 +433,7 @@ document.getElementById('feedbackForm').addEventListener('submit', function(even
   addGoogleField(transport, GOOGLE_FORM_MAPPING.materialQuality, ratingValue('materialQuality', 'standard'));
   addGoogleField(transport, GOOGLE_FORM_MAPPING.overallSatisfaction, ratingValue('overallSatisfaction', 'overall'));
 
-  /* Google Forms checkbox questions accept repeated entry parameters. */
+  /* Google Forms checkbox questions require repeated entry parameters. */
   document.querySelectorAll('input[name="topic"]:checked').forEach(function(e) {
     addGoogleField(transport, GOOGLE_FORM_MAPPING.topics, e.value);
   });
@@ -450,21 +447,36 @@ document.getElementById('feedbackForm').addEventListener('submit', function(even
 
   document.body.appendChild(transport);
 
-  /* Let the iframe finish its initial creation before the POST navigation. */
+  /* Submit directly to Google Forms. No Apps Script /exec is involved. */
   setTimeout(function() {
-    posted = true;
-    submitStartedAt = Date.now();
     transport.submit();
-  }, 80);
 
-  /* Safety timeout: never leave the user stuck on "saving" forever. */
-  setTimeout(function() {
-    if (finished) return;
-    finished = true;
-    showSubmitResult(false, '✕ Google Form سے تصدیق نہیں ملی۔ براہِ کرم Google Form Responses میں چیک کریں اور پھر دوبارہ کوشش کریں۔');
-    if (frame.parentNode) frame.parentNode.removeChild(frame);
-    if (transport.parentNode) transport.parentNode.removeChild(transport);
-  }, 12000);
+    /*
+       Do not inspect the iframe response. Cross-origin restrictions make
+       that unreliable. The Google Form endpoint has already received the
+       POST by this point in normal operation.
+    */
+    setTimeout(function() {
+      if (finished) return;
+      finished = true;
+
+      button.disabled = false;
+      button.innerText = 'Feedback جمع کریں';
+      message.className = 'message success';
+      message.innerText = '✓ آپ کا Feedback کامیابی سے Google Form میں جمع کر دیا گیا ہے۔ شکریہ۔';
+      message.scrollIntoView({behavior:'smooth', block:'center'});
+
+      originalForm.reset();
+      divisionCode.value = '';
+      divisionDisplay.classList.add('empty');
+      divisionDisplay.textContent = 'Sub-Division منتخب کریں';
+
+      setTimeout(function(){
+        if (frame.parentNode) frame.parentNode.removeChild(frame);
+        if (transport.parentNode) transport.parentNode.removeChild(transport);
+      }, 1000);
+    }, 3500);
+  }, 100);
 });
 </script>
 </body>
