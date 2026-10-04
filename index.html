@@ -226,8 +226,8 @@ input,select,textarea{width:100%;border:1px solid #c9dbea;border-radius:10px;bac
 <div class="field"><label>موبائل نمبر <span class="required">*</span></label><input type="tel" id="mobile" required placeholder="03XX-XXXXXXX"></div>
 <div class="field"><label>Email</label><input type="email" id="email" placeholder="example@gmail.com"></div>
 <div class="field full"><label>Training / Session کا نام <span class="required">*</span></label><input type="text" id="trainingSession" required placeholder="مثلاً Mobile Meter Reading / Level-1 Training"></div>
-<div class="field"><label>Trainer</label><select id="trainer" required><option value="Ali Waqas Tiwana">Ali Waqas Tiwana</option><option value="Imran Ahmad">Imran Ahmad</option><option value="Both Trainers">Both Trainers</option><option value="Other">Other</option></select></div>
-<div class="field"><label>Training کی تاریخ</label><input type="date" id="trainingDate" required></div>
+<div class="field"><label>Trainer</label><select id="trainer"><option value="Ali Waqas Tiwana">Ali Waqas Tiwana</option><option value="Imran Ahmad">Imran Ahmad</option><option value="Both Trainers">Both Trainers</option><option value="Other">Other</option></select></div>
+<div class="field"><label>Training کی تاریخ</label><input type="date" id="trainingDate"></div>
 </div></section>
 
 <section class="section"><div class="section-title"><span class="number">02</span><span>Training کا معیار اور افادیت</span></div>
@@ -265,187 +265,126 @@ var subDivision=document.getElementById('subDivision'), divisionDisplay=document
 subDivision.addEventListener('change',function(){var d=divisionMap[this.value]||''; divisionCode.value=d; if(d){divisionDisplay.classList.remove('empty');divisionDisplay.textContent=d}else{divisionDisplay.classList.add('empty');divisionDisplay.textContent='Sub-Division منتخب کریں'}});
 
 /* =========================================================
-   FINAL LESCO BACKEND
-   GitHub Pages -> Apps Script Web App -> Google Sheet
+   FINAL BACKEND: GitHub Pages -> Apps Script -> Google Form
    ========================================================= */
-var FEEDBACK_API_URL = 'https://script.google.com/macros/s/AKfycbxoO_42f3bmoefcefCNlHvGqdVFJUN41nk3plOblHaubWJqbDZgA2NZxv2idIuQm8r/exec';
 
-function value(id){
-  var e=document.getElementById(id);
-  return e ? e.value : '';
-}
+/* =========================================================
+   GOOGLE FORM MAPPING (FINAL - DO NOT CHANGE)
+   The custom page sends normal field names to the tested
+   Apps Script backend. The backend maps these to these
+   Google Form entry IDs and submits through FormApp.
+   ========================================================= */
+var GOOGLE_FORM_MAPPING = {
+  subDivision: 'entry.1671608206',
+  divisionCode: 'entry.669556226',
+  name: 'entry.635236034',
+  designation: 'entry.1003648302',
+  mobile: 'entry.476373809',
+  email: 'entry.1188349605',
+  trainingSession: 'entry.887861664',
+  trainer: 'entry.375892800',
+  trainingDate: 'entry.2127311515',
+  contentQuality: 'entry.295118859',
+  trainerClarity: 'entry.470011181',
+  practicalUsefulness: 'entry.602667747',
+  duration: 'entry.424298881',
+  materialQuality: 'entry.1323407214',
+  overallSatisfaction: 'entry.1978061490',
+  topics: 'entry.1066717342',
+  mostUseful: 'entry.1548141910',
+  problems: 'entry.2044022629',
+  suggestions: 'entry.1569165813',
+  futureTraining: 'entry.215921524',
+  comments: 'entry.180042675',
+  futureParticipation: 'entry.1017333608'
+};
 
-function checked(name){
-  var e=document.querySelector('input[name="'+name+'"]:checked');
-  return e ? e.value : '';
-}
+// Tested Apps Script Web App endpoint. DO NOT CHANGE.
+var APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxoO_42f3bmoefcefCNlHvGqdVFJUN41nk3plObIHaubWJqbDZgA2NZx2vlidIuQm8r/exec';
+var responseFrame = document.createElement('iframe');
+responseFrame.name = 'lescoResponseFrame';
+responseFrame.id = 'lescoResponseFrame';
+responseFrame.style.display = 'none';
+document.body.appendChild(responseFrame);
 
-function setMessage(type, text){
+function addField(f,n,v){var i=document.createElement('input');i.type='hidden';i.name=n;i.value=v==null?'':String(v);f.appendChild(i);}
+function value(id){var e=document.getElementById(id);return e?e.value:'';}
+function checked(name){var e=document.querySelector('input[name="'+name+'"]:checked');return e?e.value:'';}
+
+window.addEventListener('message',function(event){
+  var data=event.data;
+  if(!data || data.type!=='lescoFeedbackResult') return;
+  var button=document.getElementById('submitButton');
   var message=document.getElementById('message');
-  message.className='message '+type;
-  message.innerText=text;
-  message.style.display='block';
+  if(data.success){
+    message.className='message success';
+    message.innerText='✓ آپ کا Feedback کامیابی سے Google Form میں محفوظ ہو گیا ہے۔ شکریہ۔';
+    document.getElementById('feedbackForm').reset();
+    divisionCode.value='';
+    divisionDisplay.classList.add('empty');
+    divisionDisplay.textContent='Sub-Division منتخب کریں';
+  }else{
+    message.className='message error';
+    message.innerText='✕ '+(data.message||'Feedback محفوظ نہیں ہو سکا۔ دوبارہ کوشش کریں۔');
+  }
+  button.disabled=false;
+  button.innerText='Feedback جمع کریں';
   message.scrollIntoView({behavior:'smooth',block:'center'});
-}
-
-function resetDivision(){
-  divisionCode.value='';
-  divisionDisplay.classList.add('empty');
-  divisionDisplay.textContent='Sub-Division منتخب کریں';
-}
+});
 
 document.getElementById('feedbackForm').addEventListener('submit',function(event){
   event.preventDefault();
-
-  var form=this;
+  var originalForm=this;
   var button=document.getElementById('submitButton');
-
-  if(!form.checkValidity()){
-    form.reportValidity();
-    return;
-  }
-
-  /* Extra safety: these are required by the Apps Script backend. */
-  var requiredChecks=[
-    ['subDivision','Sub-Division'],
-    ['name','نام'],
-    ['designation','عہدہ'],
-    ['trainingSession','Training / Session'],
-    ['trainer','Trainer'],
-    ['trainingDate','Training کی تاریخ'],
-    ['contentQuality','Training کا معیار'],
-    ['trainerClarity','Trainer کی وضاحت'],
-    ['practicalUsefulness','Training کی عملی افادیت'],
-    ['duration','Training کا دورانیہ'],
-    ['materialQuality','Training Material / Demonstration'],
-    ['overallSatisfaction','مجموعی اطمینان'],
-    ['futureParticipation','آئندہ Training میں شرکت']
-  ];
-
-  for(var r=0;r<requiredChecks.length;r++){
-    var key=requiredChecks[r][0];
-    var label=requiredChecks[r][1];
-    var v=(key==='contentQuality'||key==='trainerClarity'||key==='practicalUsefulness'||
-           key==='duration'||key==='materialQuality'||key==='overallSatisfaction'||
-           key==='futureParticipation') ? checked(key) : value(key);
-    if(!String(v||'').trim()){
-      setMessage('error','✕ '+label+' لازمی ہے۔');
-      button.disabled=false;
-      return;
-    }
-  }
-
+  var message=document.getElementById('message');
+  if(!originalForm.checkValidity()){originalForm.reportValidity();return;}
   button.disabled=true;
   button.innerText='محفوظ کیا جا رہا ہے...';
-  setMessage('success','Feedback Server کو بھیجا جا رہا ہے...');
-
-  /* Hidden iframe is used deliberately: normal fetch() from GitHub Pages
-     cannot read the Apps Script response because of browser CORS rules. */
-  var frame=document.createElement('iframe');
-  var frameName='lescoFeedbackResponse_'+Date.now();
-  frame.name=frameName;
-  frame.id=frameName;
-  frame.style.display='none';
-  document.body.appendChild(frame);
+  message.className='message success';
+  message.innerText='Feedback Google Form میں محفوظ کیا جا رہا ہے...';
 
   var transport=document.createElement('form');
   transport.method='POST';
-  transport.action=FEEDBACK_API_URL;
-  transport.target=frameName;
+  transport.action=APPS_SCRIPT_URL;
+  transport.target='lescoResponseFrame';
   transport.acceptCharset='UTF-8';
   transport.style.display='none';
 
-  function add(name,val){
-    var input=document.createElement('input');
-    input.type='hidden';
-    input.name=name;
-    input.value=val==null ? '' : String(val);
-    transport.appendChild(input);
-  }
-
-  add('subDivision',value('subDivision'));
-  add('divisionCode',value('divisionCode'));
-  add('name',value('name'));
-  add('designation',value('designation'));
-  add('mobile',value('mobile'));
-  add('email',value('email'));
-  add('trainingSession',value('trainingSession'));
-  add('trainer',value('trainer'));
-  add('trainingDate',value('trainingDate'));
-  add('contentQuality',checked('contentQuality'));
-  add('trainerClarity',checked('trainerClarity'));
-  add('practicalUsefulness',checked('practicalUsefulness'));
-  add('duration',checked('duration'));
-  add('materialQuality',checked('materialQuality'));
-  add('overallSatisfaction',checked('overallSatisfaction'));
-
-  /* Checkbox values are sent as repeated fields. */
-  document.querySelectorAll('input[name="topic"]:checked').forEach(function(e){
-    add('topics',e.value);
-  });
-
-  add('mostUseful',value('mostUseful'));
-  add('problems',value('problems'));
-  add('suggestions',value('suggestions'));
-  add('futureTraining',value('futureTraining'));
-  add('comments',value('comments'));
-  add('futureParticipation',checked('futureParticipation'));
+  addField(transport,'subDivision',value('subDivision'));
+  addField(transport,'divisionCode',value('divisionCode'));
+  addField(transport,'name',value('name'));
+  addField(transport,'designation',value('designation'));
+  addField(transport,'mobile',value('mobile'));
+  addField(transport,'email',value('email'));
+  addField(transport,'trainingSession',value('trainingSession'));
+  addField(transport,'trainer',value('trainer'));
+  addField(transport,'trainingDate',value('trainingDate'));
+  addField(transport,'contentQuality',checked('contentQuality'));
+  addField(transport,'trainerClarity',checked('trainerClarity'));
+  addField(transport,'practicalUsefulness',checked('practicalUsefulness'));
+  addField(transport,'duration',checked('duration'));
+  addField(transport,'materialQuality',checked('materialQuality'));
+  addField(transport,'overallSatisfaction',checked('overallSatisfaction'));
+  document.querySelectorAll('input[name="topic"]:checked').forEach(function(e){addField(transport,'topic',e.value);});
+  addField(transport,'mostUseful',value('mostUseful'));
+  addField(transport,'problems',value('problems'));
+  addField(transport,'suggestions',value('suggestions'));
+  addField(transport,'futureTraining',value('futureTraining'));
+  addField(transport,'comments',value('comments'));
+  addField(transport,'futureParticipation',checked('futureParticipation'));
 
   document.body.appendChild(transport);
+  transport.submit();
 
-  var submitted=false;
-  var finished=false;
-  var timeoutId=null;
-
-  function cleanup(){
-    if(timeoutId) clearTimeout(timeoutId);
+  window.setTimeout(function(){
+    if(button.disabled){
+      button.disabled=false;
+      button.innerText='Feedback جمع کریں';
+      message.className='message error';
+      message.innerText='✕ Server سے response نہیں ملا۔ براہِ کرم دوبارہ کوشش کریں۔';
+    }
     if(transport.parentNode) transport.parentNode.removeChild(transport);
-    if(frame.parentNode) frame.parentNode.removeChild(frame);
-  }
-
-  function success(){
-    if(finished) return;
-    finished=true;
-    button.disabled=false;
-    button.innerText='Feedback جمع کریں';
-    setMessage('success','✓ آپ کا Feedback کامیابی سے محفوظ کر دیا گیا ہے۔ شکریہ۔');
-    form.reset();
-    resetDivision();
-    cleanup();
-  }
-
-  function failure(){
-    if(finished) return;
-    finished=true;
-    button.disabled=false;
-    button.innerText='دوبارہ کوشش کریں';
-    setMessage('error','✕ Server سے بروقت response نہیں ملا۔ براہِ کرم دوبارہ کوشش کریں۔');
-    cleanup();
-  }
-
-  /* Ignore the iframe's initial about:blank load. Only react after POST. */
-  frame.onload=function(){
-    if(submitted){
-      success();
-    }
-  };
-
-  /* Give the iframe time to finish its initial about:blank load. */
-  setTimeout(function(){
-    if(finished) return;
-    submitted=true;
-    try{
-      transport.submit();
-    }catch(err){
-      failure();
-      return;
-    }
-
-    /* A real Apps Script response should arrive well before this. */
-    timeoutId=setTimeout(function(){
-      failure();
-    },20000);
-  },100);
+  },25000);
 });
 </script>
 </body>
