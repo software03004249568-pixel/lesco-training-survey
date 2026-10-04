@@ -265,15 +265,13 @@ var subDivision=document.getElementById('subDivision'), divisionDisplay=document
 subDivision.addEventListener('change',function(){var d=divisionMap[this.value]||''; divisionCode.value=d; if(d){divisionDisplay.classList.remove('empty');divisionDisplay.textContent=d}else{divisionDisplay.classList.add('empty');divisionDisplay.textContent='Sub-Division منتخب کریں'}});
 
 /* =========================================================
-   FINAL BACKEND: GitHub Pages -> Apps Script -> Google Form
+   FINAL BACKEND: CUSTOM PAGE -> GOOGLE FORM DIRECTLY
+   Code.gs is NOT used by the submission button.
    ========================================================= */
 
-/* =========================================================
-   GOOGLE FORM MAPPING (FINAL - DO NOT CHANGE)
-   The custom page sends normal field names to the tested
-   Apps Script backend. The backend maps these to these
-   Google Form entry IDs and submits through FormApp.
-   ========================================================= */
+var GOOGLE_FORM_POST_URL = 'https://docs.google.com/forms/d/e/1FAIpQLSdScbcWviS94qsiEMbGRWQ2BUe8JLOQY6kpYX5D3-th-xOKhg/formResponse';
+
+/* FINAL Google Form entry mapping */
 var GOOGLE_FORM_MAPPING = {
   subDivision: 'entry.1671608206',
   divisionCode: 'entry.669556226',
@@ -299,92 +297,174 @@ var GOOGLE_FORM_MAPPING = {
   futureParticipation: 'entry.1017333608'
 };
 
-// Tested Apps Script Web App endpoint. DO NOT CHANGE.
-var APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxoO_42f3bmoefcefCNlHvGqdVFJUN41nk3plObIHaubWJqbDZgA2NZx2vlidIuQm8r/exec';
-var responseFrame = document.createElement('iframe');
-responseFrame.name = 'lescoResponseFrame';
-responseFrame.id = 'lescoResponseFrame';
-responseFrame.style.display = 'none';
-document.body.appendChild(responseFrame);
-
-function addField(f,n,v){var i=document.createElement('input');i.type='hidden';i.name=n;i.value=v==null?'':String(v);f.appendChild(i);}
-function value(id){var e=document.getElementById(id);return e?e.value:'';}
-function checked(name){var e=document.querySelector('input[name="'+name+'"]:checked');return e?e.value:'';}
-
-window.addEventListener('message',function(event){
-  var data=event.data;
-  if(!data || data.type!=='lescoFeedbackResult') return;
-  var button=document.getElementById('submitButton');
-  var message=document.getElementById('message');
-  if(data.success){
-    message.className='message success';
-    message.innerText='✓ آپ کا Feedback کامیابی سے Google Form میں محفوظ ہو گیا ہے۔ شکریہ۔';
-    document.getElementById('feedbackForm').reset();
-    divisionCode.value='';
-    divisionDisplay.classList.add('empty');
-    divisionDisplay.textContent='Sub-Division منتخب کریں';
-  }else{
-    message.className='message error';
-    message.innerText='✕ '+(data.message||'Feedback محفوظ نہیں ہو سکا۔ دوبارہ کوشش کریں۔');
+/* These values MUST exactly match the choices in the existing Google Form. */
+var GOOGLE_FORM_RATINGS = {
+  standard: {
+    '1': '1 - Low',
+    '2': '2 - Satisfactory',
+    '3': '3 - Good',
+    '4': '4 - Very Good',
+    '5': '5 - Excellent'
+  },
+  practical: {
+    '1': '1 - Not Useful',
+    '2': '2 - Low',
+    '3': '3 - Adequate',
+    '4': '4 - Highly Useful',
+    '5': '5 - Very Highly Useful'
+  },
+  overall: {
+    '1': '1 - Dissatisfied',
+    '2': '2 - Less Satisfied',
+    '3': '3 - Satisfied',
+    '4': '4 - Very Satisfied',
+    '5': '5 - Completely Satisfied'
   }
-  button.disabled=false;
-  button.innerText='Feedback جمع کریں';
-  message.scrollIntoView({behavior:'smooth',block:'center'});
-});
+};
 
-document.getElementById('feedbackForm').addEventListener('submit',function(event){
+function addGoogleField(form, name, value) {
+  var input = document.createElement('input');
+  input.type = 'hidden';
+  input.name = name;
+  input.value = value == null ? '' : String(value);
+  form.appendChild(input);
+}
+
+function getValue(id) {
+  var e = document.getElementById(id);
+  return e ? e.value : '';
+}
+
+function getChecked(name) {
+  var e = document.querySelector('input[name="' + name + '"]:checked');
+  return e ? e.value : '';
+}
+
+function ratingValue(name, type) {
+  var n = getChecked(name);
+  return n ? GOOGLE_FORM_RATINGS[type][n] : '';
+}
+
+function googleDateValue(v) {
+  if (!v) return '';
+  var m = String(v).match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (!m) return v;
+  return m[2] + '/' + m[3] + '/' + m[1];
+}
+
+function showSubmitResult(success, text) {
+  var button = document.getElementById('submitButton');
+  var message = document.getElementById('message');
+  button.disabled = false;
+  button.innerText = 'Feedback جمع کریں';
+  message.className = success ? 'message success' : 'message error';
+  message.innerText = text;
+  message.scrollIntoView({behavior:'smooth', block:'center'});
+}
+
+/* Submit directly to the real Google Form response endpoint. */
+document.getElementById('feedbackForm').addEventListener('submit', function(event) {
   event.preventDefault();
-  var originalForm=this;
-  var button=document.getElementById('submitButton');
-  var message=document.getElementById('message');
-  if(!originalForm.checkValidity()){originalForm.reportValidity();return;}
-  button.disabled=true;
-  button.innerText='محفوظ کیا جا رہا ہے...';
-  message.className='message success';
-  message.innerText='Feedback Google Form میں محفوظ کیا جا رہا ہے...';
 
-  var transport=document.createElement('form');
-  transport.method='POST';
-  transport.action=APPS_SCRIPT_URL;
-  transport.target='lescoResponseFrame';
-  transport.acceptCharset='UTF-8';
-  transport.style.display='none';
+  var originalForm = this;
+  var button = document.getElementById('submitButton');
+  var message = document.getElementById('message');
 
-  addField(transport,'subDivision',value('subDivision'));
-  addField(transport,'divisionCode',value('divisionCode'));
-  addField(transport,'name',value('name'));
-  addField(transport,'designation',value('designation'));
-  addField(transport,'mobile',value('mobile'));
-  addField(transport,'email',value('email'));
-  addField(transport,'trainingSession',value('trainingSession'));
-  addField(transport,'trainer',value('trainer'));
-  addField(transport,'trainingDate',value('trainingDate'));
-  addField(transport,'contentQuality',checked('contentQuality'));
-  addField(transport,'trainerClarity',checked('trainerClarity'));
-  addField(transport,'practicalUsefulness',checked('practicalUsefulness'));
-  addField(transport,'duration',checked('duration'));
-  addField(transport,'materialQuality',checked('materialQuality'));
-  addField(transport,'overallSatisfaction',checked('overallSatisfaction'));
-  document.querySelectorAll('input[name="topic"]:checked').forEach(function(e){addField(transport,'topic',e.value);});
-  addField(transport,'mostUseful',value('mostUseful'));
-  addField(transport,'problems',value('problems'));
-  addField(transport,'suggestions',value('suggestions'));
-  addField(transport,'futureTraining',value('futureTraining'));
-  addField(transport,'comments',value('comments'));
-  addField(transport,'futureParticipation',checked('futureParticipation'));
+  if (!originalForm.checkValidity()) {
+    originalForm.reportValidity();
+    return;
+  }
+
+  button.disabled = true;
+  button.innerText = 'محفوظ کیا جا رہا ہے...';
+  message.className = 'message success';
+  message.innerText = 'Feedback Google Form میں محفوظ کیا جا رہا ہے...';
+
+  var frameName = 'googleFormResponse_' + Date.now();
+  var frame = document.createElement('iframe');
+  frame.name = frameName;
+  frame.style.display = 'none';
+  frame.setAttribute('aria-hidden', 'true');
+  document.body.appendChild(frame);
+
+  var posted = false;
+  var finished = false;
+  var submitStartedAt = 0;
+
+  frame.onload = function() {
+    /* Ignore the initial about:blank load. */
+    if (!posted || finished) return;
+
+    finished = true;
+    showSubmitResult(true, '✓ آپ کا Feedback کامیابی سے Google Form میں محفوظ ہو گیا ہے۔ شکریہ۔');
+
+    originalForm.reset();
+    divisionCode.value = '';
+    divisionDisplay.classList.add('empty');
+    divisionDisplay.textContent = 'Sub-Division منتخب کریں';
+
+    setTimeout(function(){
+      if (frame.parentNode) frame.parentNode.removeChild(frame);
+    }, 1000);
+  };
+
+  var transport = document.createElement('form');
+  transport.method = 'POST';
+  transport.action = GOOGLE_FORM_POST_URL;
+  transport.target = frameName;
+  transport.acceptCharset = 'UTF-8';
+  transport.style.display = 'none';
+
+  /* Google Forms metadata */
+  addGoogleField(transport, 'fvv', '1');
+  addGoogleField(transport, 'pageHistory', '0');
+
+  addGoogleField(transport, GOOGLE_FORM_MAPPING.subDivision, getValue('subDivision'));
+  addGoogleField(transport, GOOGLE_FORM_MAPPING.divisionCode, getValue('divisionCode'));
+  addGoogleField(transport, GOOGLE_FORM_MAPPING.name, getValue('name'));
+  addGoogleField(transport, GOOGLE_FORM_MAPPING.designation, getValue('designation'));
+  addGoogleField(transport, GOOGLE_FORM_MAPPING.mobile, getValue('mobile'));
+  addGoogleField(transport, GOOGLE_FORM_MAPPING.email, getValue('email'));
+  addGoogleField(transport, GOOGLE_FORM_MAPPING.trainingSession, getValue('trainingSession'));
+  addGoogleField(transport, GOOGLE_FORM_MAPPING.trainer, getValue('trainer'));
+  addGoogleField(transport, GOOGLE_FORM_MAPPING.trainingDate, googleDateValue(getValue('trainingDate')));
+
+  addGoogleField(transport, GOOGLE_FORM_MAPPING.contentQuality, ratingValue('contentQuality', 'standard'));
+  addGoogleField(transport, GOOGLE_FORM_MAPPING.trainerClarity, ratingValue('trainerClarity', 'standard'));
+  addGoogleField(transport, GOOGLE_FORM_MAPPING.practicalUsefulness, ratingValue('practicalUsefulness', 'practical'));
+  addGoogleField(transport, GOOGLE_FORM_MAPPING.duration, getChecked('duration'));
+  addGoogleField(transport, GOOGLE_FORM_MAPPING.materialQuality, ratingValue('materialQuality', 'standard'));
+  addGoogleField(transport, GOOGLE_FORM_MAPPING.overallSatisfaction, ratingValue('overallSatisfaction', 'overall'));
+
+  /* Google Forms checkbox questions accept repeated entry parameters. */
+  document.querySelectorAll('input[name="topic"]:checked').forEach(function(e) {
+    addGoogleField(transport, GOOGLE_FORM_MAPPING.topics, e.value);
+  });
+
+  addGoogleField(transport, GOOGLE_FORM_MAPPING.mostUseful, getValue('mostUseful'));
+  addGoogleField(transport, GOOGLE_FORM_MAPPING.problems, getValue('problems'));
+  addGoogleField(transport, GOOGLE_FORM_MAPPING.suggestions, getValue('suggestions'));
+  addGoogleField(transport, GOOGLE_FORM_MAPPING.futureTraining, getValue('futureTraining'));
+  addGoogleField(transport, GOOGLE_FORM_MAPPING.comments, getValue('comments'));
+  addGoogleField(transport, GOOGLE_FORM_MAPPING.futureParticipation, getChecked('futureParticipation'));
 
   document.body.appendChild(transport);
-  transport.submit();
 
-  window.setTimeout(function(){
-    if(button.disabled){
-      button.disabled=false;
-      button.innerText='Feedback جمع کریں';
-      message.className='message error';
-      message.innerText='✕ Server سے response نہیں ملا۔ براہِ کرم دوبارہ کوشش کریں۔';
-    }
-    if(transport.parentNode) transport.parentNode.removeChild(transport);
-  },25000);
+  /* Let the iframe finish its initial creation before the POST navigation. */
+  setTimeout(function() {
+    posted = true;
+    submitStartedAt = Date.now();
+    transport.submit();
+  }, 80);
+
+  /* Safety timeout: never leave the user stuck on "saving" forever. */
+  setTimeout(function() {
+    if (finished) return;
+    finished = true;
+    showSubmitResult(false, '✕ Google Form سے تصدیق نہیں ملی۔ براہِ کرم Google Form Responses میں چیک کریں اور پھر دوبارہ کوشش کریں۔');
+    if (frame.parentNode) frame.parentNode.removeChild(frame);
+    if (transport.parentNode) transport.parentNode.removeChild(transport);
+  }, 12000);
 });
 </script>
 </body>
