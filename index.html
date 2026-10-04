@@ -265,64 +265,14 @@ var subDivision=document.getElementById('subDivision'), divisionDisplay=document
 subDivision.addEventListener('change',function(){var d=divisionMap[this.value]||''; divisionCode.value=d; if(d){divisionDisplay.classList.remove('empty');divisionDisplay.textContent=d}else{divisionDisplay.classList.add('empty');divisionDisplay.textContent='Sub-Division منتخب کریں'}});
 
 /* =========================================================
-   FINAL BACKEND: CUSTOM PAGE -> GOOGLE FORM DIRECTLY
-   Code.gs is NOT used by the submission button.
+   FINAL BACKEND: CUSTOM PAGE -> APPS SCRIPT -> GOOGLE FORM
+   IMPORTANT: Code.gs receives the values and submits the
+   REAL Google Form using FormApp. Do not change Code.gs.
    ========================================================= */
 
-var GOOGLE_FORM_POST_URL = 'https://docs.google.com/forms/d/e/1FAIpQLSdScbcWviS94qsiEMbGRWQ2BUe8JLOQY6kpYX5D3-th-xOKhg/formResponse';
+var APPS_SCRIPT_POST_URL = 'https://script.google.com/macros/s/AKfycbxoO_42f3bmoefcefCNlHvGqdVFjUN41nk3plObIHaubWJqbDZgA2NZx2vlidIuQm8r/exec';
 
-/* FINAL Google Form entry mapping */
-var GOOGLE_FORM_MAPPING = {
-  subDivision: 'entry.1671608206',
-  divisionCode: 'entry.669556226',
-  name: 'entry.635236034',
-  designation: 'entry.1003648302',
-  mobile: 'entry.476373809',
-  email: 'entry.1188349605',
-  trainingSession: 'entry.887861664',
-  trainer: 'entry.375892800',
-  trainingDate: 'entry.2127311515',
-  contentQuality: 'entry.295118859',
-  trainerClarity: 'entry.470011181',
-  practicalUsefulness: 'entry.602667747',
-  duration: 'entry.424298881',
-  materialQuality: 'entry.1323407214',
-  overallSatisfaction: 'entry.1978061490',
-  topics: 'entry.1066717342',
-  mostUseful: 'entry.1548141910',
-  problems: 'entry.2044022629',
-  suggestions: 'entry.1569165813',
-  futureTraining: 'entry.215921524',
-  comments: 'entry.180042675',
-  futureParticipation: 'entry.1017333608'
-};
-
-/* These values MUST exactly match the choices in the existing Google Form. */
-var GOOGLE_FORM_RATINGS = {
-  standard: {
-    '1': '1 - Low',
-    '2': '2 - Satisfactory',
-    '3': '3 - Good',
-    '4': '4 - Very Good',
-    '5': '5 - Excellent'
-  },
-  practical: {
-    '1': '1 - Not Useful',
-    '2': '2 - Low',
-    '3': '3 - Adequate',
-    '4': '4 - Highly Useful',
-    '5': '5 - Very Highly Useful'
-  },
-  overall: {
-    '1': '1 - Dissatisfied',
-    '2': '2 - Less Satisfied',
-    '3': '3 - Satisfied',
-    '4': '4 - Very Satisfied',
-    '5': '5 - Completely Satisfied'
-  }
-};
-
-function addGoogleField(form, name, value) {
+function addBackendField(form, name, value) {
   var input = document.createElement('input');
   input.type = 'hidden';
   input.name = name;
@@ -340,16 +290,12 @@ function getChecked(name) {
   return e ? e.value : '';
 }
 
-function ratingValue(name, type) {
-  var n = getChecked(name);
-  return n ? GOOGLE_FORM_RATINGS[type][n] : '';
-}
-
-function googleDateValue(v) {
-  if (!v) return '';
-  var m = String(v).match(/^(\d{4})-(\d{2})-(\d{2})$/);
-  if (!m) return v;
-  return m[2] + '/' + m[3] + '/' + m[1];
+function getCheckedTopics() {
+  var values = [];
+  document.querySelectorAll('input[name="topic"]:checked').forEach(function(e) {
+    values.push(e.value);
+  });
+  return values;
 }
 
 function showSubmitResult(success, text) {
@@ -362,7 +308,11 @@ function showSubmitResult(success, text) {
   message.scrollIntoView({behavior:'smooth', block:'center'});
 }
 
-/* Submit directly to the real Google Form response endpoint. */
+/*
+   Submit to Apps Script. Apps Script then submits the values to the
+   actual Google Form with FormApp. The iframe load event fires only
+   after doPost() has finished, so we do NOT show success immediately.
+*/
 document.getElementById('feedbackForm').addEventListener('submit', function(event) {
   event.preventDefault();
 
@@ -376,29 +326,11 @@ document.getElementById('feedbackForm').addEventListener('submit', function(even
   }
 
   button.disabled = true;
-  button.innerText = 'محفوظ کیا جا رہا ہے...';
+  button.innerText = 'Google Form میں محفوظ کیا جا رہا ہے...';
   message.className = 'message success';
-  message.innerText = 'Feedback Google Form میں محفوظ کیا جا رہا ہے...';
+  message.innerText = 'براہِ کرم انتظار کریں، Feedback پہلے Google Form میں Submit ہو رہا ہے...';
 
-  var frameName = 'googleFormResponse_' + Date.now();
-  var frame = document.createElement('iframe');
-  frame.name = frameName;
-  frame.style.display = 'none';
-  frame.setAttribute('aria-hidden', 'true');
-  document.body.appendChild(frame);
-
-  /*
-     IMPORTANT:
-     Google Forms is cross-origin, so the browser cannot read the response
-     page from the hidden iframe. We therefore DO NOT wait for an iframe
-     response. The POST itself is sent directly to Google Forms and, after
-     a short fixed delay, the user is shown the completed message.
-     This prevents the page from hanging on "saving" or showing a false
-     "server response" error because of browser cross-origin restrictions.
-  */
-  var finished = false;
-
-  var frameName = 'googleFormResponse_' + Date.now();
+  var frameName = 'backendResponse_' + Date.now();
   var frame = document.createElement('iframe');
   frame.name = frameName;
   frame.style.display = 'none';
@@ -407,76 +339,70 @@ document.getElementById('feedbackForm').addEventListener('submit', function(even
 
   var transport = document.createElement('form');
   transport.method = 'POST';
-  transport.action = GOOGLE_FORM_POST_URL;
+  transport.action = APPS_SCRIPT_POST_URL;
   transport.target = frameName;
   transport.acceptCharset = 'UTF-8';
   transport.style.display = 'none';
 
-  /* Google Forms metadata */
-  addGoogleField(transport, 'fvv', '1');
-  addGoogleField(transport, 'pageHistory', '0');
+  addBackendField(transport, 'subDivision', getValue('subDivision'));
+  addBackendField(transport, 'divisionCode', getValue('divisionCode'));
+  addBackendField(transport, 'name', getValue('name'));
+  addBackendField(transport, 'designation', getValue('designation'));
+  addBackendField(transport, 'mobile', getValue('mobile'));
+  addBackendField(transport, 'email', getValue('email'));
+  addBackendField(transport, 'trainingSession', getValue('trainingSession'));
+  addBackendField(transport, 'trainer', getValue('trainer'));
+  addBackendField(transport, 'trainingDate', getValue('trainingDate'));
+  addBackendField(transport, 'contentQuality', getChecked('contentQuality'));
+  addBackendField(transport, 'trainerClarity', getChecked('trainerClarity'));
+  addBackendField(transport, 'practicalUsefulness', getChecked('practicalUsefulness'));
+  addBackendField(transport, 'duration', getChecked('duration'));
+  addBackendField(transport, 'materialQuality', getChecked('materialQuality'));
+  addBackendField(transport, 'overallSatisfaction', getChecked('overallSatisfaction'));
+  addBackendField(transport, 'topics', getCheckedTopics().join(', '));
+  addBackendField(transport, 'mostUseful', getValue('mostUseful'));
+  addBackendField(transport, 'problems', getValue('problems'));
+  addBackendField(transport, 'suggestions', getValue('suggestions'));
+  addBackendField(transport, 'futureTraining', getValue('futureTraining'));
+  addBackendField(transport, 'comments', getValue('comments'));
+  addBackendField(transport, 'futureParticipation', getChecked('futureParticipation'));
 
-  addGoogleField(transport, GOOGLE_FORM_MAPPING.subDivision, getValue('subDivision'));
-  addGoogleField(transport, GOOGLE_FORM_MAPPING.divisionCode, getValue('divisionCode'));
-  addGoogleField(transport, GOOGLE_FORM_MAPPING.name, getValue('name'));
-  addGoogleField(transport, GOOGLE_FORM_MAPPING.designation, getValue('designation'));
-  addGoogleField(transport, GOOGLE_FORM_MAPPING.mobile, getValue('mobile'));
-  addGoogleField(transport, GOOGLE_FORM_MAPPING.email, getValue('email'));
-  addGoogleField(transport, GOOGLE_FORM_MAPPING.trainingSession, getValue('trainingSession'));
-  addGoogleField(transport, GOOGLE_FORM_MAPPING.trainer, getValue('trainer'));
-  addGoogleField(transport, GOOGLE_FORM_MAPPING.trainingDate, googleDateValue(getValue('trainingDate')));
+  var submitted = false;
+  var completed = false;
 
-  addGoogleField(transport, GOOGLE_FORM_MAPPING.contentQuality, ratingValue('contentQuality', 'standard'));
-  addGoogleField(transport, GOOGLE_FORM_MAPPING.trainerClarity, ratingValue('trainerClarity', 'standard'));
-  addGoogleField(transport, GOOGLE_FORM_MAPPING.practicalUsefulness, ratingValue('practicalUsefulness', 'practical'));
-  addGoogleField(transport, GOOGLE_FORM_MAPPING.duration, getChecked('duration'));
-  addGoogleField(transport, GOOGLE_FORM_MAPPING.materialQuality, ratingValue('materialQuality', 'standard'));
-  addGoogleField(transport, GOOGLE_FORM_MAPPING.overallSatisfaction, ratingValue('overallSatisfaction', 'overall'));
+  frame.onload = function() {
+    if (!submitted || completed) return;
+    completed = true;
 
-  /* Google Forms checkbox questions require repeated entry parameters. */
-  document.querySelectorAll('input[name="topic"]:checked').forEach(function(e) {
-    addGoogleField(transport, GOOGLE_FORM_MAPPING.topics, e.value);
+    showSubmitResult(true, '✓ آپ کا Feedback کامیابی سے Google Form میں Submit ہو گیا ہے۔ شکریہ۔');
+
+    originalForm.reset();
+    divisionCode.value = '';
+    divisionDisplay.classList.add('empty');
+    divisionDisplay.textContent = 'Sub-Division منتخب کریں';
+
+    setTimeout(function() {
+      if (frame.parentNode) frame.parentNode.removeChild(frame);
+      if (transport.parentNode) transport.parentNode.removeChild(transport);
+    }, 1500);
+  };
+
+  /* Safety timeout: only show an error if Apps Script never responds. */
+  var timeoutId = setTimeout(function() {
+    if (completed) return;
+    completed = true;
+    showSubmitResult(false, '× Google Form سے جواب موصول نہیں ہوا۔ براہِ کرم دوبارہ کوشش کریں۔');
+    if (frame.parentNode) frame.parentNode.removeChild(frame);
+    if (transport.parentNode) transport.parentNode.removeChild(transport);
+  }, 30000);
+
+  frame.addEventListener('load', function() {
+    if (completed) clearTimeout(timeoutId);
   });
 
-  addGoogleField(transport, GOOGLE_FORM_MAPPING.mostUseful, getValue('mostUseful'));
-  addGoogleField(transport, GOOGLE_FORM_MAPPING.problems, getValue('problems'));
-  addGoogleField(transport, GOOGLE_FORM_MAPPING.suggestions, getValue('suggestions'));
-  addGoogleField(transport, GOOGLE_FORM_MAPPING.futureTraining, getValue('futureTraining'));
-  addGoogleField(transport, GOOGLE_FORM_MAPPING.comments, getValue('comments'));
-  addGoogleField(transport, GOOGLE_FORM_MAPPING.futureParticipation, getChecked('futureParticipation'));
-
   document.body.appendChild(transport);
-
-  /* Submit directly to Google Forms. No Apps Script /exec is involved. */
-  setTimeout(function() {
-    transport.submit();
-
-    /*
-       Do not inspect the iframe response. Cross-origin restrictions make
-       that unreliable. The Google Form endpoint has already received the
-       POST by this point in normal operation.
-    */
-    setTimeout(function() {
-      if (finished) return;
-      finished = true;
-
-      button.disabled = false;
-      button.innerText = 'Feedback جمع کریں';
-      message.className = 'message success';
-      message.innerText = '✓ آپ کا Feedback کامیابی سے Google Form میں جمع کر دیا گیا ہے۔ شکریہ۔';
-      message.scrollIntoView({behavior:'smooth', block:'center'});
-
-      originalForm.reset();
-      divisionCode.value = '';
-      divisionDisplay.classList.add('empty');
-      divisionDisplay.textContent = 'Sub-Division منتخب کریں';
-
-      setTimeout(function(){
-        if (frame.parentNode) frame.parentNode.removeChild(frame);
-        if (transport.parentNode) transport.parentNode.removeChild(transport);
-      }, 1000);
-    }, 3500);
-  }, 100);
+  submitted = true;
+  transport.submit();
 });
 </script>
 </body>
